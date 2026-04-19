@@ -20,3 +20,13 @@ val AlbumThumbnailSize = 144.dp
 
 val ThumbnailCornerRadius = 3.dp
 val PlayerHorizontalPadding = 32.dp
+
+// Settings screen dimensions
+val SettingsHeaderExpandedHeight = 200.dp
+val SettingsHeaderCollapsedHeight = 64.dp
+val SettingsCardElevation = 4.dp
+val SettingsCardCornerRadius = 28.dp
+val SettingsIconContainerSize = 40.dp
+val SettingsItemSpacing = 2.dp
+val SettingsItemHorizontalPadding = 16.dp
+val SettingsGroupVerticalSpacing = 24.dp

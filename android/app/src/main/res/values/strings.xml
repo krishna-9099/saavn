@@ -28,6 +28,30 @@
     <string name="library_item_cached">Cached</string>
     <string name="library_item_uploaded">Uploaded</string>
 
+    <!-- Settings screen strings -->
+    <string name="settings_header_subtitle">Your audio sanctuary</string>
+    <string name="settings_account_sign_in">Sign in to sync across devices</string>
+    <string name="settings_account_member_free">Free Member</string>
+    <string name="settings_account_member_premium">Premium Member</string>
+
+    <string name="settings_quality_low">Low (128kbps)</string>
+    <string name="settings_quality_medium">Medium (256kbps)</string>
+    <string name="settings_quality_high">High (320kbps)</string>
+    <string name="settings_quality_ultra">Ultra (Lossless)</string>
+
+    <string name="settings_storage_used">%1$s of %2$s used</string>
+    <string name="settings_storage_cache">%1$s cached</string>
+    <string name="settings_storage_clear">Clear</string>
+    <string name="settings_storage_clearing">Clearing…</string>
+
+    <string name="settings_theme_color_label">Theme Color</string>
+    <string name="settings_theme_color_selected">Selected</string>
+
+    <string name="settings_about_version">Version %1$s</string>
+    <string name="settings_about_checking">Checking…</string>
+    <string name="settings_about_update_available">Update available</string>
+    <string name="settings_about_up_to_date">Up to date</string>
+
     <string name="profile_popup_title">Saavn play</string>
     <string name="profile_popup_user_name">Hum Tum</string>
     <string name="profile_popup_logout">Log out</string>

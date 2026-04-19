@@ -4,6 +4,7 @@ import com.krishnatune.data.home.FeaturedPlaylistResponse
 import com.krishnatune.data.home.PagedHomeSectionResponse
 import com.krishnatune.models.HomeDataResponse
 import com.krishnatune.models.HomeSectionItem
+import com.krishnatune.models.AutocompleteResponse
 import com.krishnatune.models.SearchResponse
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -70,6 +71,64 @@ interface SaavnApi {
         @Query("api_version") apiVersion: String = "6",
         @Query("q") query: String,
         @Query("n") count: Int = 24
+    ): SearchResponse
+
+    @GET("api.php")
+    suspend fun getAutocomplete(
+        @Query("__call") call: String = "autocomplete.get",
+        @Query("_format") format: String = "json",
+        @Query("_marker") marker: String = "0",
+        @Query("ctx") ctx: String = "web6dot0",
+        @Query("api_version") apiVersion: String = "6",
+        @Query("query") query: String
+    ): AutocompleteResponse
+
+    @GET("api.php")
+    suspend fun searchSongs(
+        @Query("__call") call: String = "search.getResults",
+        @Query("_format") format: String = "json",
+        @Query("_marker") marker: String = "0",
+        @Query("ctx") ctx: String = "web6dot0",
+        @Query("api_version") apiVersion: String = "6",
+        @Query("q") query: String,
+        @Query("p") page: Int = 0,
+        @Query("n") count: Int = 10
+    ): SearchResponse
+
+    @GET("api.php")
+    suspend fun searchAlbums(
+        @Query("__call") call: String = "search.getAlbumResults",
+        @Query("_format") format: String = "json",
+        @Query("_marker") marker: String = "0",
+        @Query("ctx") ctx: String = "web6dot0",
+        @Query("api_version") apiVersion: String = "6",
+        @Query("q") query: String,
+        @Query("p") page: Int = 0,
+        @Query("n") count: Int = 10
+    ): SearchResponse
+
+    @GET("api.php")
+    suspend fun searchArtists(
+        @Query("__call") call: String = "search.getArtistResults",
+        @Query("_format") format: String = "json",
+        @Query("_marker") marker: String = "0",
+        @Query("ctx") ctx: String = "web6dot0",
+        @Query("api_version") apiVersion: String = "6",
+        @Query("q") query: String,
+        @Query("p") page: Int = 0,
+        @Query("n") count: Int = 10
+    ): SearchResponse
+
+    @GET("api.php")
+    suspend fun searchPlaylists(
+        @Query("__call") call: String = "search.getPlaylistResults",
+        @Query("_format") format: String = "json",
+        @Query("_marker") marker: String = "0",
+        @Query("ctx") ctx: String = "web6dot0",
+        @Query("api_version") apiVersion: String = "6",
+        @Query("q") query: String,
+        @Query("p") page: Int = 0,
+        @Query("n") count: Int = 10
     ): SearchResponse
 
     companion object {

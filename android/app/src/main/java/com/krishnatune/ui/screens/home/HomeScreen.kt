@@ -75,7 +75,7 @@ fun HomeScreen(
                 is HomeUiState.Success -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 100.dp) // padding for mini player
+                        contentPadding = PaddingValues(bottom = 100.dp)
                     ) {
                         if (speedDialItems.isNotEmpty()) {
                             item(key = "speed-dial-section") {
@@ -85,6 +85,7 @@ fun HomeScreen(
                                     pinnedIds = pinnedIds,
                                     onItemClick = onItemClick,
                                     onItemLongClick = { activeActionItem = it },
+                                    onAddClick = { /* TODO: Show add speed dial dialog */ },
                                 )
                             }
                         }

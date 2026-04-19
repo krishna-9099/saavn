@@ -3,6 +3,7 @@ package com.krishnatune.viewmodels
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.krishnatune.data.search.SearchCategory
 import com.krishnatune.data.search.SearchRepository
 import com.krishnatune.db.AppDatabase
 import com.krishnatune.models.SearchUiItem
@@ -27,6 +28,8 @@ data class SearchUiState(
     val results: List<SearchUiItem> = emptyList(),
     val errorMessage: String? = null,
     val recentSearches: List<RecentSearchUiItem> = emptyList(),
+    val isShowingSuggestions: Boolean = false,
+    val selectedCategory: SearchCategory = SearchCategory.ALL,
 )
 
 @OptIn(FlowPreview::class)
@@ -54,7 +57,7 @@ class SearchViewModel(
         viewModelScope.launch {
             _uiState
                 .map { it.query.trim() }
-                .debounce(350)
+                .debounce(200)
                 .distinctUntilChanged()
                 .collect { query ->
                     if (query.isBlank()) {
@@ -62,7 +65,8 @@ class SearchViewModel(
                             it.copy(
                                 isLoading = false,
                                 results = emptyList(),
-                                errorMessage = null
+                                errorMessage = null,
+                                isShowingSuggestions = false
                             )
                         }
                     } else {
@@ -76,7 +80,8 @@ class SearchViewModel(
         _uiState.update {
             it.copy(
                 query = query,
-                errorMessage = null
+                errorMessage = null,
+                isShowingSuggestions = true
             )
         }
     }
@@ -114,28 +119,38 @@ class SearchViewModel(
             )
         }
 
-        runCatching {
-            repository.search(query)
-        }.onSuccess { results ->
+        val useAutocomplete = _uiState.value.isShowingSuggestions
+        val results = if (useAutocomplete) {
+            runCatching { repository.getAutocomplete(query) }.getOrNull() ?: emptyList()
+        } else {
+            val category = _uiState.value.selectedCategory
+            runCatching { repository.searchByCategory(query, category) }.getOrNull() ?: emptyList()
+        }
+
+        if (!useAutocomplete && results.isNotEmpty()) {
             repository.storeRecentSearch(
                 query = query,
                 type = results.firstOrNull()?.type ?: "search"
             )
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    results = results,
-                    errorMessage = null
-                )
-            }
-        }.onFailure { throwable ->
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    results = emptyList(),
-                    errorMessage = throwable.message ?: "Search failed"
-                )
-            }
+        }
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                results = results,
+                errorMessage = if (results.isEmpty()) "No results found" else null
+            )
+        }
+    }
+    
+    fun onResultSelected() {
+        _uiState.update { it.copy(isShowingSuggestions = false) }
+    }
+
+    fun onCategorySelected(category: SearchCategory) {
+        _uiState.update { it.copy(selectedCategory = category) }
+        val query = _uiState.value.query.trim()
+        if (query.isNotBlank()) {
+            viewModelScope.launch { runSearch(query) }
         }
     }
 }

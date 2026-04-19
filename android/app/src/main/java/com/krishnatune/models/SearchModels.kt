@@ -40,3 +40,40 @@ fun SearchApiItem.toUiItem(): SearchUiItem? {
         permaUrl = permaUrl
     )
 }
+
+data class AutocompleteResponse(
+    @SerializedName("songs") val songs: AutocompleteSection? = null,
+    @SerializedName("albums") val albums: AutocompleteSection? = null,
+    @SerializedName("artists") val artists: AutocompleteSection? = null,
+    @SerializedName("playlists") val playlists: AutocompleteSection? = null,
+    @SerializedName("topquery") val topquery: AutocompleteSection? = null
+)
+
+data class AutocompleteSection(
+    @SerializedName("data") val data: List<AutocompleteItem>? = null,
+    @SerializedName("position") val position: Int? = null
+)
+
+data class AutocompleteItem(
+    @SerializedName("id") val id: String? = null,
+    @SerializedName("title") val title: String? = null,
+    @SerializedName("subtitle") val subtitle: String? = null,
+    @SerializedName("type") val type: String? = null,
+    @SerializedName("image") val image: String? = null,
+    @SerializedName("perma_url") val permaUrl: String? = null,
+    @SerializedName("description") val description: String? = null
+)
+
+fun AutocompleteItem.toUiItem(): SearchUiItem? {
+    val itemTitle = title ?: return null
+    val itemType = type?.lowercase() ?: "search"
+
+    return SearchUiItem(
+        id = id ?: "$itemType-$itemTitle",
+        title = itemTitle,
+        subtitle = subtitle ?: description ?: "",
+        type = itemType,
+        image = image,
+        permaUrl = permaUrl
+    )
+}

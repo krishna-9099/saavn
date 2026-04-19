@@ -3,6 +3,7 @@ package com.krishnatune.ui.screens.search
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,8 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -26,11 +25,10 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.QueueMusic
-import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.krishnatune.data.search.SearchCategory
 import com.krishnatune.models.SearchUiItem
 import com.krishnatune.ui.utils.NetworkImage
 import com.krishnatune.viewmodels.RecentSearchUiItem
@@ -65,8 +64,15 @@ fun SearchScreen(
         SearchHeader(
             query = uiState.query,
             onQueryChange = viewModel::onQueryChange,
-            onSearch = { }
+            onClear = { viewModel.clearQuery() }
         )
+
+        if (uiState.query.isNotBlank()) {
+            SearchCategoryChips(
+                selectedCategory = uiState.selectedCategory,
+                onCategorySelected = viewModel::onCategorySelected
+            )
+        }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -81,13 +87,14 @@ fun SearchScreen(
                         onClearAll = viewModel::clearRecentSearches
                     )
                 }
-
+            } else if (uiState.isShowingSuggestions) {
                 item {
-                    TopSearches(onSearchSelected = viewModel::onQueryChange)
-                }
-
-                item {
-                    BrowseByCategories()
+                    AutocompleteResults(
+                        items = uiState.results,
+                        onItemSelected = {
+                            viewModel.onResultSelected()
+                        }
+                    )
                 }
             } else {
                 item {
@@ -102,10 +109,103 @@ fun SearchScreen(
 }
 
 @Composable
+private fun AutocompleteResults(
+    items: List<SearchUiItem>,
+    onItemSelected: () -> Unit
+) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        items.forEach { item ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onItemSelected() }
+                    .padding(vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                when (item.type) {
+                    "song", "album" -> {
+                        NetworkImage(
+                            url = item.image.orEmpty(),
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                        )
+                    }
+                    "artist" -> {
+                        NetworkImage(
+                            url = item.image.orEmpty(),
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(24.dp))
+                        )
+                    }
+                    else -> {
+                        Surface(
+                            modifier = Modifier.size(48.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = when (item.type) {
+                                        "playlist" -> Icons.Default.QueueMusic
+                                        else -> Icons.Default.Search
+                                    },
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = item.title,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = item.subtitle.takeIf { it.isNotBlank() } ?: item.type.replace('_', ' ').replaceFirstChar { it.uppercase() },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+            Divider(color = MaterialTheme.colorScheme.outlineVariant)
+        }
+    }
+}
+
+@Composable
+private fun SearchCategoryChips(
+    selectedCategory: SearchCategory,
+    onCategorySelected: (SearchCategory) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        SearchCategory.entries.forEach { category ->
+            FilterChip(
+                selected = selectedCategory == category,
+                onClick = { onCategorySelected(category) },
+                label = { Text(category.value.replaceFirstChar { it.uppercase() }) }
+            )
+        }
+    }
+}
+
+@Composable
 private fun SearchHeader(
     query: String,
     onQueryChange: (String) -> Unit,
-    onSearch: () -> Unit
+    onClear: () -> Unit
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
@@ -117,16 +217,10 @@ private fun SearchHeader(
                 .statusBarsPadding()
                 .padding(16.dp)
         ) {
-            Text(
-                text = "Search",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-
             SearchBar(
                 query = query,
                 onQueryChange = onQueryChange,
-                onSearch = onSearch
+                onClear = onClear
             )
         }
     }
@@ -136,12 +230,10 @@ private fun SearchHeader(
 private fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
-    onSearch: () -> Unit
+    onClear: () -> Unit
 ) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surfaceVariant,
         shape = RoundedCornerShape(24.dp)
     ) {
@@ -181,7 +273,7 @@ private fun SearchBar(
             )
             if (query.isNotEmpty()) {
                 IconButton(
-                    onClick = { onQueryChange("") },
+                    onClick = onClear,
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
@@ -198,39 +290,19 @@ private fun SearchBar(
 @Composable
 private fun RecentSearches(
     items: List<RecentSearchUiItem>,
-    onSearchSelected: (String) -> Unit
-    ,
+    onSearchSelected: (String) -> Unit,
     onRemove: (String) -> Unit,
     onClearAll: () -> Unit
 ) {
     if (items.isEmpty()) return
 
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "RECENT SEARCHES",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            TextButton(onClick = onClearAll) {
-                Text(
-                    text = "Clear",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-
         items.forEach { item ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onSearchSelected(item.query) }
-                    .padding(vertical = 12.dp),
+                    .padding(vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
@@ -242,134 +314,18 @@ private fun RecentSearches(
                         else -> Icons.Default.Search
                     },
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = item.query,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(onClick = { onRemove(item.query) }) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Remove",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-    }
-}
-
-@Composable
-private fun TopSearches(
-    onSearchSelected: (String) -> Unit
-) {
-    val topSearches = listOf(
-        "Gadar 2",
-        "Jawan",
-        "Tu Jhoothi Main Makkar",
-        "Animal",
-        "Dunki",
-        "Sam Bahadur"
-    )
-
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        Text(
-            text = "TOP SEARCHES",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        topSearches.forEach { query ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onSearchSelected(query) }
-                    .padding(vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.TrendingUp,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = query,
-                    style = MaterialTheme.typography.bodyLarge
+                    text = item.query,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-    }
-}
-
-@Composable
-private fun BrowseByCategories() {
-    val categories = listOf(
-        CategoryItem("Artists", Icons.Default.Person),
-        CategoryItem("Albums", Icons.Default.Album),
-        CategoryItem("Playlists", Icons.Default.QueueMusic),
-        CategoryItem("Radio", Icons.Default.Radio)
-    )
-
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        Text(
-            text = "BROWSE BY",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(categories) { category ->
-                CategoryCard(category = category)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-
-@Composable
-private fun CategoryCard(category: CategoryItem) {
-    Surface(
-        modifier = Modifier
-            .size(100.dp)
-            .clickable { },
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = category.icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(32.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = category.name,
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Medium
-            )
-        }
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
@@ -541,8 +497,3 @@ private fun SearchStatusCard(
 private fun String.prettyType(): String {
     return replace('_', ' ').replaceFirstChar { it.uppercase() }
 }
-
-data class CategoryItem(
-    val name: String,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector
-)
