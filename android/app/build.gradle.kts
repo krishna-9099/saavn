@@ -59,10 +59,15 @@ dependencies {
     
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    // ViewModel Compose
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     // Media3 (ExoPlayer)
     implementation("androidx.media3:media3-exoplayer:1.1.1")
     // Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.7.4")
     // Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
+    // Paging Compose
+    implementation("androidx.paging:paging-compose:3.2.1")
 }

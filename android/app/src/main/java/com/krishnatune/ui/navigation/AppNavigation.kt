@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.LibraryMusic
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -46,8 +45,7 @@ fun AppNavigation() {
     val items = listOf(
         NavigationItem("home", "Home", Icons.Filled.Home),
         NavigationItem("search", "Search", Icons.Filled.Search),
-        NavigationItem("library", "Library", Icons.Outlined.LibraryMusic),
-        NavigationItem("settings", "Settings", Icons.Filled.Settings)
+        NavigationItem("library", "Library", Icons.Outlined.LibraryMusic)
     )
 
     Scaffold(
@@ -88,13 +86,17 @@ fun AppNavigation() {
                 composable("home") {
                     HomeScreen(onSongClick = {
                         navController.navigate("player")
+                    }, onSettingsClick = {
+                        navController.navigate("settings")
                     })
                 }
                 composable("search") {
                     SearchScreen()
                 }
                 composable("library") {
-                    LibraryScreen()
+                    LibraryScreen(onSettingsClick = {
+                        navController.navigate("settings")
+                    })
                 }
                 composable("settings") {
                     SettingsScreen()
