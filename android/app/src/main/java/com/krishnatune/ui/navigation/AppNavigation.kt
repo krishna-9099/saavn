@@ -5,7 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.krishnatune.domain.model.Song
-import com.krishnatune.ui.screens.HomeScreenV2
+import com.krishnatune.ui.screens.HomeScreen
 import com.krishnatune.ui.screens.PlayerScreen
 
 @Composable
@@ -17,11 +17,7 @@ fun AppNavigation() {
     NavHost(navController = navController, startDestination = "home") {
 
         composable("home") {
-            HomeScreenV2(
-                onSongClick = {
-                    navController.navigate("player")
-                }
-            )
+            HomeScreen()
         }
 
         composable("player") {

@@ -23,7 +23,18 @@ All notable changes to this project will be documented in this file.
 - API interface skeleton (SaavnApi)
 - PlayerController (ExoPlayer setup)
 
-### Notes
+### Added
+- Android build setups: `build.gradle.kts`, `settings.gradle.kts`
+- Android Manifest file and essential resource folders + strings.xml
+- `gradle-wrapper.properties` configuration with Gradle 8.1.1
+- Backup rules and data extraction rules XML files
+
+### Changes
+- Fixed compilation issues by adding missing dependencies (`retrofit`, `media3-exoplayer`, `navigation-compose`, `coil-compose`).
+- Removed duplicate files `HomeScreenV2.kt` and `HomeScreenV3.kt` that were causing `SongCard` `Conflicting overloads` errors.
+- Fixed `AppNavigation.kt` to use `HomeScreen()` correctly.
+- Added missing resources required for Android building (`strings.xml`, `themes.xml`, and extraction rules).
+- Ran and successfully deployed the app via `adb shell am start`.
 - UI-first development approach (mock data)
 - API integration pending
 
