@@ -25,6 +25,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.krishnatune.R
 import com.krishnatune.models.HomeSectionItem
+import com.krishnatune.ui.screens.home.components.ArtistStationsSection
+import com.krishnatune.ui.screens.home.components.NewReleasesSection
+import com.krishnatune.ui.screens.home.components.RadioStationsSection
 import com.krishnatune.ui.screens.home.components.SectionRow
 import com.krishnatune.ui.screens.home.components.TopBar
 import com.krishnatune.viewmodels.HomeUiState
@@ -65,25 +68,50 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(bottom = 100.dp) // padding for mini player
                     ) {
-                        val data = state.data
-                        
-                        items(state.sortedModules.size) { index ->
-                            val module = state.sortedModules[index]
-                            val sectionItems = getItemsForSource(module.second.source, data)
+                        items(state.modules.size) { index ->
+                            val module = state.modules[index]
+                            val sectionItems = module.initialItems
 
                             if (!sectionItems.isNullOrEmpty()) {
-                                when (module.second.type) {
-                                    "list" -> {
+                                when {
+                                    module.config.source == "radio" -> {
+                                        RadioStationsSection(
+                                            title = module.config.title
+                                                ?.takeIf { it.isNotBlank() }
+                                                ?: stringResource(R.string.radio_stations_title),
+                                            items = sectionItems,
+                                            onItemClick = { onSongClick() }
+                                        )
+                                    }
+                                    module.config.source == "new_albums" -> {
+                                        NewReleasesSection(
+                                            title = module.config.title
+                                                ?.takeIf { it.isNotBlank() }
+                                                ?: "New Releases",
+                                            items = module.pagedItems,
+                                            onItemClick = { onSongClick() }
+                                        )
+                                    }
+                                    module.config.source == "artist_recos" -> {
+                                        ArtistStationsSection(
+                                            title = module.config.title
+                                                ?.takeIf { it.isNotBlank() }
+                                                ?: "Artist Stations",
+                                            items = sectionItems,
+                                            onItemClick = { onSongClick() }
+                                        )
+                                    }
+                                    module.config.type == "list" -> {
                                         VerticalListSection(
-                                            title = module.second.title ?: module.first,
+                                            title = module.config.title ?: module.key,
                                             items = sectionItems,
                                             onItemClick = { onSongClick() }
                                         )
                                     }
                                     else -> {
                                         SectionRow(
-                                            title = module.second.title ?: module.first,
-                                            items = sectionItems,
+                                            title = module.config.title ?: module.key,
+                                            items = module.pagedItems,
                                             onItemClick = { onSongClick() }
                                         )
                                     }
@@ -195,19 +223,5 @@ fun VerticalListSection(
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-
-private fun getItemsForSource(source: String?, data: com.krishnatune.models.HomeDataResponse): List<HomeSectionItem>? {
-    return when (source) {
-        "new_trending" -> data.new_trending
-        "top_playlists" -> data.top_playlists
-        "new_albums" -> data.new_albums
-        "browse_discover" -> data.browse_discover
-        "charts" -> data.charts
-        "radio" -> data.radio
-        "artist_recos" -> data.artist_recos
-        // "promo:vx:data:xx" dynamic sources are currently omitted for simplicity
-        else -> null
     }
 }

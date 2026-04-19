@@ -4,6 +4,41 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.8.0] - 2026-04-19
+
+### Added
+- Added `paging-compose`-backed home section pagination for supported launch-data sources.
+- Added a home repository and source-aware `PagingSource` that preserves launch-data module ordering while fetching additional section content on demand.
+
+### Changed
+- Updated scrollable home rows to render `LazyPagingItems` so horizontal scrolling can trigger incremental fetches instead of stopping at the initial payload.
+- Updated the `New Releases` section to consume paged data instead of a fixed chunk from the first launch response.
+
+### Fixed
+- Prevented supported home sections from being capped to the first launch-data batch by wiring append loading into the section UI.
+
+## [0.7.5] - 2026-04-19
+
+### Changed
+- Removed the outer background panel from the Home `Radio Stations` section while preserving circular station cards, glow borders, and play overlays.
+- Kept spacing/alignment tuned for a transparent section presentation on top of the existing Home screen background.
+
+## [0.7.4] - 2026-04-19
+
+
+## [0.7.6] - 2026-04-19
+
+### Fixed
+- Removed square box artifacts around `Radio Stations` circular cards by enforcing strict circular clipping across glow, image, and overlay layers.
+- Switched the circular card container to a shape-locked `Box` shadow/clip pipeline for cleaner round rendering.
+
+- Added 100dp circular station artwork cards with centered play overlays, gradient glow borders, blur lighting effects, and single-line labels.
+- Added responsive station count rendering (4-6 cards shown from the available radio list based on device width).
+
+### Changed
+- Routed home modules with source `radio` to a dedicated high-fidelity section instead of the generic horizontal card row.
+- Added dark gradient section styling and radio-specific color/string tokens for accessibility and consistent theme usage.
+
 ## [0.7.3] - 2026-04-19
 
 ### Fixed
