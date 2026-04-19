@@ -8,11 +8,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.krishnatune.models.HomeSectionItem
+import com.krishnatune.ui.theme.bbh_bartle
 import com.krishnatune.ui.theme.rememberAdaptiveTypeScale
 import com.krishnatune.ui.utils.NetworkImage
 import kotlin.math.min
@@ -26,17 +28,19 @@ fun SectionRow(
     val typeScale = rememberAdaptiveTypeScale()
     val widthDp = LocalConfiguration.current.screenWidthDp
     val sectionTitleSize = if (widthDp >= 600) {
-        min(22f * typeScale.title, 16f)
+        min(18f * typeScale.title, 15f)
     } else {
-        22f * typeScale.title
+        18f * typeScale.title
     }
 
     Column {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium.copy(
+                fontFamily = bbh_bartle,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = sectionTitleSize.sp
+                fontSize = sectionTitleSize.sp,
+                lineHeight = (sectionTitleSize + 2f).sp
             ),
             modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
         )
@@ -72,15 +76,23 @@ fun HomeItemCard(item: HomeSectionItem, onClick: () -> Unit) {
 
             Text(
                 text = item.title ?: "Unknown",
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontFamily = FontFamily.Default,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 13.sp,
+                    lineHeight = 15.sp
+                )
             )
             Text(
                 text = item.subtitle ?: "",
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontSize = 11.sp,
+                    lineHeight = 13.sp
+                ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

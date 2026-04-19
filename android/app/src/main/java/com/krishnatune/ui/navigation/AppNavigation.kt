@@ -68,7 +68,12 @@ fun AppNavigation() {
                         items.forEach { item ->
                             NavigationBarItem(
                                 icon = { Icon(item.icon, contentDescription = item.title) },
-                                label = { Text(item.title) },
+                                label = {
+                                    Text(
+                                        text = item.title,
+                                        style = MaterialTheme.typography.labelMedium
+                                    )
+                                },
                                 selected = currentRoute == item.route,
                                 onClick = {
                                     navController.navigate(item.route) {

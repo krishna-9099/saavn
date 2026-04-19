@@ -49,6 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.krishnatune.R
 import com.krishnatune.models.Song
@@ -116,7 +117,11 @@ fun MiniPlayer(song: Song, onClick: () -> Unit) {
                 Text(
                     text = song.title,
                     modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp,
+                        lineHeight = 18.sp
+                    ),
                     color = palette.contentColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -124,7 +129,10 @@ fun MiniPlayer(song: Song, onClick: () -> Unit) {
                 Text(
                     text = song.artist,
                     modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 12.sp,
+                        lineHeight = 14.sp
+                    ),
                     color = palette.secondaryContentColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

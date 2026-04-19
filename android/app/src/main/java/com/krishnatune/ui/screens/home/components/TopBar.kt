@@ -49,9 +49,9 @@ fun TopBar(
     val typeScale = rememberAdaptiveTypeScale()
     val widthDp = LocalConfiguration.current.screenWidthDp
     val homeTitleSize = if (widthDp >= 600) {
-        min(34f * typeScale.heading, 22f)
+        min(30f * typeScale.heading, 21f)
     } else {
-        34f * typeScale.heading
+        30f * typeScale.heading
     }
 
     Row(

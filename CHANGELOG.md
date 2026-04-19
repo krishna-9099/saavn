@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.7.1] - 2026-04-19
+
+### Fixed
+- Reduced oversized decorative typography on compact home surfaces after the Metrolist theme port.
+- Restored default font families for compact body, title, and label roles so card captions, mini-player metadata, and bottom navigation labels no longer render too large.
+- Tightened Home header, section heading, and artwork-card text sizing to better match the intended Saavn/Metrolist proportions on phone screens.
+
 ## [0.7.0] - 2026-04-19
 
 ### Added
