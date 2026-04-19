@@ -2,7 +2,7 @@ package com.krishnatune.ui.screens.home.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -34,6 +34,7 @@ fun NewReleasesSection(
     title: String,
     items: Flow<PagingData<HomeSectionItem>>,
     onItemClick: (HomeSectionItem) -> Unit,
+    onItemLongClick: ((HomeSectionItem) -> Unit)? = null,
 ) {
     val lazyItems = items.collectAsLazyPagingItems()
     if (lazyItems.itemCount == 0 && lazyItems.loadState.refresh !is LoadState.Loading) return
@@ -84,7 +85,11 @@ fun NewReleasesSection(
                         if (itemIndex < lazyItems.itemCount) {
                             val item = lazyItems[itemIndex]
                             if (item != null) {
-                                NewReleaseRow(item = item, onClick = { onItemClick(item) })
+                                NewReleaseRow(
+                                    item = item,
+                                    onClick = { onItemClick(item) },
+                                    onLongClick = onItemLongClick,
+                                )
                             } else {
                                 NewReleaseRowPlaceholder()
                             }
@@ -111,15 +116,20 @@ fun NewReleasesSection(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun NewReleaseRow(
     item: HomeSectionItem,
     onClick: () -> Unit,
+    onLongClick: ((HomeSectionItem) -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = { onLongClick?.invoke(item) },
+            )
             .padding(vertical = 8.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -148,7 +158,7 @@ private fun NewReleaseRow(
             )
         }
 
-        IconButton(onClick = { /* TODO */ }) {
+        IconButton(onClick = { onLongClick?.invoke(item) }) {
             Icon(
                 imageVector = Icons.Default.MoreVert,
                 contentDescription = "More options",

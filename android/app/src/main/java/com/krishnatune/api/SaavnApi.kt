@@ -4,6 +4,7 @@ import com.krishnatune.data.home.FeaturedPlaylistResponse
 import com.krishnatune.data.home.PagedHomeSectionResponse
 import com.krishnatune.models.HomeDataResponse
 import com.krishnatune.models.HomeSectionItem
+import com.krishnatune.models.SearchResponse
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -59,6 +60,17 @@ interface SaavnApi {
         @Query("api_version") apiVersion: String = "6",
         @Query("n") count: Int
     ): List<HomeSectionItem>
+
+    @GET("api.php")
+    suspend fun searchAll(
+        @Query("__call") call: String = "search.getResults",
+        @Query("_format") format: String = "json",
+        @Query("_marker") marker: String = "0",
+        @Query("ctx") ctx: String = "web6dot0",
+        @Query("api_version") apiVersion: String = "6",
+        @Query("q") query: String,
+        @Query("n") count: Int = 24
+    ): SearchResponse
 
     companion object {
         private const val BASE_URL = "https://www.jiosaavn.com/"

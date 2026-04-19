@@ -1,8 +1,9 @@
 package com.krishnatune.ui.screens.home.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,6 +53,7 @@ fun RadioStationsSection(
     title: String,
     items: List<HomeSectionItem>,
     onItemClick: (HomeSectionItem) -> Unit,
+    onItemLongClick: ((HomeSectionItem) -> Unit)? = null,
 ) {
     if (items.isEmpty()) return
 
@@ -87,7 +89,8 @@ fun RadioStationsSection(
             ) { item ->
                 RadioStationCard(
                     item = item,
-                    onClick = { onItemClick(item) }
+                    onClick = { onItemClick(item) },
+                    onLongClick = onItemLongClick,
                 )
             }
         }
@@ -96,10 +99,12 @@ fun RadioStationsSection(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun RadioStationCard(
     item: HomeSectionItem,
     onClick: () -> Unit,
+    onLongClick: ((HomeSectionItem) -> Unit)? = null,
 ) {
     val stationName = item.title?.takeIf { it.isNotBlank() }
         ?: stringResource(R.string.radio_station_unknown)
@@ -108,7 +113,10 @@ private fun RadioStationCard(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .width(108.dp)
-            .clickable(onClick = onClick)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = { onLongClick?.invoke(item) },
+            )
     ) {
         Box(
             modifier = Modifier.size(100.dp),

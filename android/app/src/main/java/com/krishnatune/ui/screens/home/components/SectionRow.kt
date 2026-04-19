@@ -1,7 +1,8 @@
 package com.krishnatune.ui.screens.home.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -30,7 +31,8 @@ import kotlin.math.min
 fun SectionRow(
     title: String,
     items: Flow<PagingData<HomeSectionItem>>,
-    onItemClick: (HomeSectionItem) -> Unit
+    onItemClick: (HomeSectionItem) -> Unit,
+    onItemLongClick: ((HomeSectionItem) -> Unit)? = null,
 ) {
     val lazyItems = items.collectAsLazyPagingItems()
     val typeScale = rememberAdaptiveTypeScale()
@@ -60,7 +62,11 @@ fun SectionRow(
             ) { index ->
                 val item = lazyItems[index]
                 if (item != null) {
-                    HomeItemCard(item = item, onClick = { onItemClick(item) })
+                    HomeItemCard(
+                        item = item,
+                        onClick = { onItemClick(item) },
+                        onLongClick = onItemLongClick,
+                    )
                 } else {
                     HomeItemPlaceholder()
                 }
@@ -77,13 +83,21 @@ fun SectionRow(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HomeItemCard(item: HomeSectionItem, onClick: () -> Unit) {
+fun HomeItemCard(
+    item: HomeSectionItem,
+    onClick: () -> Unit,
+    onLongClick: ((HomeSectionItem) -> Unit)? = null,
+) {
     Card(
         modifier = Modifier
             .padding(horizontal = 8.dp)
             .width(140.dp)
-            .clickable { onClick() },
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = { onLongClick?.invoke(item) },
+            ),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(8.dp)) {

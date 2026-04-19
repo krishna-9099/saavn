@@ -90,4 +90,11 @@
     <string name="radio_station_unknown">Unknown Station</string>
     <string name="cd_radio_station_image">%1$s station artwork</string>
     <string name="cd_play_radio_station">Play %1$s radio station</string>
+
+    <string name="speed_dial_title">Speed Dial</string>
+    <string name="speed_dial_pin">Pin to Speed Dial</string>
+    <string name="speed_dial_unpin">Unpin from Speed Dial</string>
+    <string name="speed_dial_cancel">Cancel</string>
+    <string name="speed_dial_unknown_item">Unknown item</string>
+    <string name="cd_speed_dial_pinned">Pinned to Speed Dial</string>
 </resources>

@@ -4,6 +4,46 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.11.0] - 2026-04-19
+
+### Added
+- Added Room-backed recent search persistence with `RecentSearchEntity` and `RecentSearchDao`.
+- Added live recent-search observation to the Search screen so user queries are restored from the database.
+
+### Changed
+- Updated the Search flow to save successful user searches into the local database with deduped query keys and latest-first ordering.
+- Wired recent search rows to support replay, single-item removal, and clear-all actions against the database.
+
+## [0.10.0] - 2026-04-19
+
+### Added
+- Added live search API integration for the Search screen using the documented global search endpoint.
+- Added search models, a search repository, and a debounced `SearchViewModel` for query handling, loading, retry, and result state.
+
+### Changed
+- Replaced the Search screen’s mock result list with real API-backed results while preserving the existing screen layout.
+- Wired recent and top search suggestions to populate and trigger the live search flow.
+
+### Fixed
+- Removed the placeholder-only search behavior so non-empty queries now fetch and render backend search results.
+
+## [0.9.0] - 2026-04-19
+
+### Added
+- Added a local Room-backed Speed Dial system with persistent pin storage (`SpeedDialItemEntity`, `SpeedDialDao`, `AppDatabase`).
+- Added a dedicated Home Speed Dial grid section with pinned badges and responsive card layout.
+- Added Home item action sheet and long-press/overflow pin entry points across home sections.
+- Added Player overflow pin/unpin action for Speed Dial.
+- Added new Speed Dial string resources and accessibility labels.
+
+### Changed
+- Refactored Home state flow to include pinned ids and merged Speed Dial candidates from launch-data sections.
+- Updated app navigation to route Home item taps by item type (album, artist, playlist, podcast, song fallback).
+- Updated Home screen to use shared `HomeViewModel` injection from navigation for consistent pin state across Home and Player.
+
+### Fixed
+- Prevented pin state drift between Home and Player by centralizing Speed Dial toggle logic in `HomeRepository`.
+
 ## [0.8.0] - 2026-04-19
 
 ### Added

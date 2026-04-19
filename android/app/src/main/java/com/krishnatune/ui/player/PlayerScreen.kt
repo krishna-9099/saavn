@@ -39,6 +39,8 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -85,12 +87,18 @@ private val PlayerDarkIcon = Color(0xFF15150F)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun PlayerScreen(song: Song, onClose: () -> Unit = {}) {
+fun PlayerScreen(
+    song: Song,
+    isSpeedDialPinned: Boolean = false,
+    onToggleSpeedDial: () -> Unit = {},
+    onClose: () -> Unit = {},
+) {
     val totalDurationSeconds = 185
     var progress by rememberSaveable(song.id) { mutableStateOf(165f / totalDurationSeconds) }
     var screenHeight by remember { mutableStateOf(0f) }
     val offsetY = remember { Animatable(0f) }
     val coroutineScope = rememberCoroutineScope()
+    var isOverflowMenuExpanded by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(song.id) {
         while (isActive) {
@@ -435,20 +443,43 @@ fun PlayerScreen(song: Song, onClose: () -> Unit = {}) {
 
                     Spacer(modifier = Modifier.width(if (isCompact) 10.dp else 14.dp))
 
-                    Surface(
-                        modifier = Modifier
-                            .size(overflowButtonSize)
-                            .clip(CircleShape)
-                            .clickable { },
-                        shape = CircleShape,
-                        color = PlayerWhiteButton
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Filled.MoreVert,
-                                contentDescription = stringResource(R.string.cd_player_more),
-                                tint = PlayerDarkIcon,
-                                modifier = Modifier.size(overflowIconSize)
+                    Box {
+                        Surface(
+                            modifier = Modifier
+                                .size(overflowButtonSize)
+                                .clip(CircleShape)
+                                .clickable { isOverflowMenuExpanded = true },
+                            shape = CircleShape,
+                            color = PlayerWhiteButton
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Filled.MoreVert,
+                                    contentDescription = stringResource(R.string.cd_player_more),
+                                    tint = PlayerDarkIcon,
+                                    modifier = Modifier.size(overflowIconSize)
+                                )
+                            }
+                        }
+
+                        DropdownMenu(
+                            expanded = isOverflowMenuExpanded,
+                            onDismissRequest = { isOverflowMenuExpanded = false },
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = if (isSpeedDialPinned) {
+                                            stringResource(R.string.speed_dial_unpin)
+                                        } else {
+                                            stringResource(R.string.speed_dial_pin)
+                                        },
+                                    )
+                                },
+                                onClick = {
+                                    onToggleSpeedDial()
+                                    isOverflowMenuExpanded = false
+                                },
                             )
                         }
                     }

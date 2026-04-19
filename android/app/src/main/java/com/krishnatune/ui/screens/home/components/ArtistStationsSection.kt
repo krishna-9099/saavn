@@ -1,7 +1,8 @@
 package com.krishnatune.ui.screens.home.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -32,6 +33,7 @@ fun ArtistStationsSection(
     title: String,
     items: List<HomeSectionItem>,
     onItemClick: (HomeSectionItem) -> Unit,
+    onItemLongClick: ((HomeSectionItem) -> Unit)? = null,
 ) {
     if (items.isEmpty()) return
 
@@ -67,7 +69,8 @@ fun ArtistStationsSection(
                     avatarSize = avatarSize,
                     cardWidth = cardWidth,
                     fontSize = fontSize,
-                    onClick = { onItemClick(item) }
+                    onClick = { onItemClick(item) },
+                    onLongClick = onItemLongClick,
                 )
             }
         }
@@ -76,6 +79,7 @@ fun ArtistStationsSection(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ArtistAvatarCard(
     item: HomeSectionItem,
@@ -83,6 +87,7 @@ private fun ArtistAvatarCard(
     cardWidth: Dp,
     fontSize: androidx.compose.ui.unit.TextUnit,
     onClick: () -> Unit,
+    onLongClick: ((HomeSectionItem) -> Unit)? = null,
 ) {
     val name = item.title?.takeIf { it.isNotBlank() } ?: "Artist"
 
@@ -90,7 +95,10 @@ private fun ArtistAvatarCard(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .width(cardWidth)
-            .clickable(onClick = onClick)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = { onLongClick?.invoke(item) },
+            )
     ) {
         Surface(
             modifier = Modifier

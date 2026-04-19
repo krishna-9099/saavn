@@ -1,5 +1,6 @@
 package com.krishnatune.ui.navigation
 
+import android.app.Application
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -15,13 +16,18 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.krishnatune.models.HomeSectionItem
 import com.krishnatune.models.Song
 import com.krishnatune.ui.component.MiniPlayer
 import com.krishnatune.ui.screens.home.HomeScreen
@@ -34,11 +40,16 @@ import com.krishnatune.ui.screens.artist.ArtistScreen
 import com.krishnatune.ui.screens.album.AlbumScreen
 import com.krishnatune.ui.screens.download.DownloadScreen
 import com.krishnatune.ui.screens.podcast.PodcastScreen
+import com.krishnatune.viewmodels.HomeViewModel
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val application = LocalContext.current.applicationContext as Application
+    val homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.provideFactory(application))
+    val pinnedIds by homeViewModel.pinnedIds.collectAsState()
 
     // Placeholder current song for the MiniPlayer
     val currentSong = Song("1", "Blinding Lights", "The Weeknd", "https://picsum.photos/200", "")
@@ -94,11 +105,15 @@ fun AppNavigation() {
         Box(modifier = Modifier.padding(innerPadding)) {
             NavHost(navController = navController, startDestination = "home") {
                 composable("home") {
-                    HomeScreen(onSongClick = {
-                        navController.navigate("player")
-                    }, onSettingsClick = {
+                    HomeScreen(
+                        viewModel = homeViewModel,
+                        onItemClick = { item ->
+                            navController.navigateForHomeItem(item)
+                        },
+                        onSettingsClick = {
                         navController.navigate("settings")
-                    })
+                        },
+                    )
                 }
                 composable("search") {
                     SearchScreen()
@@ -114,6 +129,10 @@ fun AppNavigation() {
                 composable("player") {
                     PlayerScreen(
                         song = currentSong,
+                        isSpeedDialPinned = currentSong.id in pinnedIds,
+                        onToggleSpeedDial = {
+                            homeViewModel.toggleSpeedDial(currentSong.toHomeSectionItem())
+                        },
                         onClose = { navController.popBackStack() }
                     )
                 }
@@ -135,6 +154,44 @@ fun AppNavigation() {
             }
         }
     }
+}
+
+private fun NavHostController.navigateForHomeItem(item: HomeSectionItem) {
+    val itemType = item.type?.lowercase(Locale.ROOT).orEmpty()
+    val itemId = item.id?.takeIf { it.isNotBlank() }
+
+    when (itemType) {
+        "album" -> {
+            if (itemId != null) navigate("album/$itemId") else navigate("player")
+        }
+
+        "artist" -> {
+            if (itemId != null) navigate("artist/$itemId") else navigate("player")
+        }
+
+        "playlist", "radio", "station", "chart", "mix" -> {
+            if (itemId != null) navigate("playlist/$itemId") else navigate("player")
+        }
+
+        "show", "podcast" -> {
+            if (itemId != null) navigate("podcast/$itemId") else navigate("player")
+        }
+
+        else -> navigate("player")
+    }
+}
+
+private fun Song.toHomeSectionItem(): HomeSectionItem {
+    return HomeSectionItem(
+        id = id,
+        title = title,
+        subtitle = artist,
+        type = "song",
+        image = image,
+        perma_url = null,
+        language = null,
+        more_info = null,
+    )
 }
 
 data class NavigationItem(val route: String, val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)

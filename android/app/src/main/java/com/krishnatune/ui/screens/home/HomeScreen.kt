@@ -1,7 +1,8 @@
 package com.krishnatune.ui.screens.home
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -15,6 +16,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
@@ -22,24 +26,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.krishnatune.R
 import com.krishnatune.models.HomeSectionItem
 import com.krishnatune.ui.screens.home.components.ArtistStationsSection
+import com.krishnatune.ui.screens.home.components.HomeItemActionsSheet
 import com.krishnatune.ui.screens.home.components.NewReleasesSection
 import com.krishnatune.ui.screens.home.components.RadioStationsSection
 import com.krishnatune.ui.screens.home.components.SectionRow
+import com.krishnatune.ui.screens.home.components.SpeedDialSection
 import com.krishnatune.ui.screens.home.components.TopBar
 import com.krishnatune.viewmodels.HomeUiState
 import com.krishnatune.viewmodels.HomeViewModel
 
 @Composable
 fun HomeScreen(
-    onSongClick: () -> Unit,
+    viewModel: HomeViewModel,
+    onItemClick: (HomeSectionItem) -> Unit,
     onSettingsClick: () -> Unit = {},
-    viewModel: HomeViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val speedDialItems by viewModel.speedDialItems.collectAsState()
+    val pinnedIds by viewModel.pinnedIds.collectAsState()
+
+    var activeActionItem by remember { mutableStateOf<HomeSectionItem?>(null) }
 
     Box(
         modifier = Modifier
@@ -68,6 +77,18 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(bottom = 100.dp) // padding for mini player
                     ) {
+                        if (speedDialItems.isNotEmpty()) {
+                            item(key = "speed-dial-section") {
+                                SpeedDialSection(
+                                    title = stringResource(R.string.speed_dial_title),
+                                    items = speedDialItems,
+                                    pinnedIds = pinnedIds,
+                                    onItemClick = onItemClick,
+                                    onItemLongClick = { activeActionItem = it },
+                                )
+                            }
+                        }
+
                         items(state.modules.size) { index ->
                             val module = state.modules[index]
                             val sectionItems = module.initialItems
@@ -80,7 +101,8 @@ fun HomeScreen(
                                                 ?.takeIf { it.isNotBlank() }
                                                 ?: stringResource(R.string.radio_stations_title),
                                             items = sectionItems,
-                                            onItemClick = { onSongClick() }
+                                            onItemClick = onItemClick,
+                                            onItemLongClick = { activeActionItem = it },
                                         )
                                     }
                                     module.config.source == "new_albums" -> {
@@ -89,7 +111,8 @@ fun HomeScreen(
                                                 ?.takeIf { it.isNotBlank() }
                                                 ?: "New Releases",
                                             items = module.pagedItems,
-                                            onItemClick = { onSongClick() }
+                                            onItemClick = onItemClick,
+                                            onItemLongClick = { activeActionItem = it },
                                         )
                                     }
                                     module.config.source == "artist_recos" -> {
@@ -98,21 +121,24 @@ fun HomeScreen(
                                                 ?.takeIf { it.isNotBlank() }
                                                 ?: "Artist Stations",
                                             items = sectionItems,
-                                            onItemClick = { onSongClick() }
+                                            onItemClick = onItemClick,
+                                            onItemLongClick = { activeActionItem = it },
                                         )
                                     }
                                     module.config.type == "list" -> {
                                         VerticalListSection(
                                             title = module.config.title ?: module.key,
                                             items = sectionItems,
-                                            onItemClick = { onSongClick() }
+                                            onItemClick = onItemClick,
+                                            onItemLongClick = { activeActionItem = it },
                                         )
                                     }
                                     else -> {
                                         SectionRow(
                                             title = module.config.title ?: module.key,
                                             items = module.pagedItems,
-                                            onItemClick = { onSongClick() }
+                                            onItemClick = onItemClick,
+                                            onItemLongClick = { activeActionItem = it },
                                         )
                                     }
                                 }
@@ -150,13 +176,27 @@ fun HomeScreen(
             }
         }
     }
+
+    activeActionItem?.let { item ->
+        HomeItemActionsSheet(
+            item = item,
+            isPinned = item.speedDialIdentity() in pinnedIds,
+            onDismiss = { activeActionItem = null },
+            onTogglePin = { selected ->
+                viewModel.toggleSpeedDial(selected)
+                activeActionItem = null
+            },
+        )
+    }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VerticalListSection(
     title: String,
     items: List<HomeSectionItem>,
-    onItemClick: (HomeSectionItem) -> Unit
+    onItemClick: (HomeSectionItem) -> Unit,
+    onItemLongClick: ((HomeSectionItem) -> Unit)? = null,
 ) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Row(
@@ -189,7 +229,10 @@ fun VerticalListSection(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
-                    .clickable { onItemClick(item) },
+                    .combinedClickable(
+                        onClick = { onItemClick(item) },
+                        onLongClick = { onItemLongClick?.invoke(item) },
+                    ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 com.krishnatune.ui.utils.NetworkImage(
@@ -214,7 +257,7 @@ fun VerticalListSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                IconButton(onClick = { /* TODO */ }) {
+                IconButton(onClick = { onItemLongClick?.invoke(item) }) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = "More options"
@@ -224,4 +267,8 @@ fun VerticalListSection(
         }
         Spacer(modifier = Modifier.height(16.dp))
     }
+}
+
+private fun HomeSectionItem.speedDialIdentity(): String {
+    return id ?: perma_url.orEmpty()
 }
