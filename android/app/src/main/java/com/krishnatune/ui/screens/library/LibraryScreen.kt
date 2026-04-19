@@ -57,12 +57,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.krishnatune.R
 import com.krishnatune.ui.screens.home.components.TopBar
-import com.krishnatune.ui.theme.LibraryCardSurface
-import com.krishnatune.ui.theme.LibraryChipBackground
-import com.krishnatune.ui.theme.LibraryChipSelectedBackground
-import com.krishnatune.ui.theme.LibraryScreenBackground
-import com.krishnatune.ui.theme.LibrarySubtleText
-import com.krishnatune.ui.theme.WhiteText
 
 private enum class LibrarySortOption(@StringRes val labelRes: Int) {
     DATE_ADDED(R.string.library_sort_date_added),
@@ -99,7 +93,7 @@ fun LibraryScreen(onSettingsClick: () -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(LibraryScreenBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         TopBar(
             title = stringResource(R.string.library_title),
@@ -157,10 +151,10 @@ private fun LibraryCategoryChips(
                     )
                 },
                 colors = FilterChipDefaults.filterChipColors(
-                    containerColor = LibraryChipBackground,
-                    selectedContainerColor = LibraryChipSelectedBackground,
-                    labelColor = LibrarySubtleText,
-                    selectedLabelColor = WhiteText
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
                 ),
                 border = null
             )
@@ -197,12 +191,12 @@ private fun LibraryFilterRow(
                         fontStyle = FontStyle.Italic,
                         fontWeight = FontWeight.Medium
                     ),
-                    color = LibrarySubtleText
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Icon(
                     imageVector = Icons.Filled.KeyboardArrowUp,
                     contentDescription = stringResource(R.string.cd_library_sort),
-                    tint = LibrarySubtleText
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -230,7 +224,7 @@ private fun LibraryFilterRow(
                 } else {
                     stringResource(R.string.cd_library_switch_grid)
                 },
-                tint = WhiteText
+                tint = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -262,13 +256,13 @@ private fun LibraryGridItem(item: LibraryShortcut) {
                 .fillMaxWidth()
                 .aspectRatio(1f),
             shape = RoundedCornerShape(8.dp),
-            color = LibraryCardSurface
+            color = MaterialTheme.colorScheme.surfaceVariant
         ) {
             Box(contentAlignment = androidx.compose.ui.Alignment.Center) {
                 Icon(
                     imageVector = item.icon,
                     contentDescription = null,
-                    tint = WhiteText,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(64.dp)
                 )
             }
@@ -280,7 +274,7 @@ private fun LibraryGridItem(item: LibraryShortcut) {
                 fontStyle = FontStyle.Italic,
                 fontWeight = FontWeight.SemiBold
             ),
-            color = WhiteText
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -299,7 +293,7 @@ private fun LibraryListContent(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                color = LibraryCardSurface
+                color = MaterialTheme.colorScheme.surfaceVariant
             ) {
                 Row(
                     modifier = Modifier
@@ -310,7 +304,7 @@ private fun LibraryListContent(
                     Icon(
                         imageVector = item.icon,
                         contentDescription = null,
-                        tint = WhiteText,
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(28.dp)
                     )
                     Text(
@@ -319,7 +313,7 @@ private fun LibraryListContent(
                             fontStyle = FontStyle.Italic,
                             fontWeight = FontWeight.SemiBold
                         ),
-                        color = WhiteText
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

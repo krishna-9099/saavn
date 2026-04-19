@@ -2,6 +2,7 @@ package com.krishnatune.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+val DefaultThemeColor = Color(0xFFED5564)
 val GreenPrimary = Color(0xFF1DB954)
 val GreenDark = Color(0xFF1AA34A)
 val BlackBackground = Color(0xFF121212)
@@ -9,7 +10,7 @@ val DarkSurface = Color(0xFF1E1E1E)
 val WhiteText = Color(0xFFFFFFFF)
 val GrayText = Color(0xFFB3B3B3)
 
-val MetroThemeSeed = Color(0xFFED5564)
+val MetroThemeSeed = DefaultThemeColor
 val MetroLightBackground = Color(0xFFFFF8F7)
 val MetroLightSurface = Color(0xFFFFF8F7)
 val MetroLightOnSurface = Color(0xFF22191B)

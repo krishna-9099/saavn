@@ -2,15 +2,21 @@ package com.krishnatune.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 
 private val FallbackDarkColorScheme = darkColorScheme(
-    primary = MetroThemeSeed,
-    secondary = MetroThemeSeed,
-    tertiary = MetroThemeSeed,
+    primary = DefaultThemeColor,
+    secondary = DefaultThemeColor,
+    tertiary = DefaultThemeColor,
     background = MetroDarkBackground,
     surface = MetroDarkSurface,
     onPrimary = WhiteText,
@@ -19,9 +25,9 @@ private val FallbackDarkColorScheme = darkColorScheme(
 )
 
 private val FallbackLightColorScheme = lightColorScheme(
-    primary = MetroThemeSeed,
-    secondary = MetroThemeSeed,
-    tertiary = MetroThemeSeed,
+    primary = DefaultThemeColor,
+    secondary = DefaultThemeColor,
+    tertiary = DefaultThemeColor,
     background = MetroLightBackground,
     surface = MetroLightSurface,
     onPrimary = WhiteText,
@@ -33,14 +39,34 @@ private val FallbackLightColorScheme = lightColorScheme(
 fun KrishnaTuneTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     pureBlack: Boolean = false,
-    useDynamicColor: Boolean = true,
+    themeColor: Color = DefaultThemeColor,
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
+    val useSystemDynamicColor =
+        themeColor == DefaultThemeColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
     val baseColorScheme = when {
-        useDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+        useSystemDynamicColor -> {
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+
+        themeColor != DefaultThemeColor -> {
+            if (darkTheme) {
+                FallbackDarkColorScheme.copy(
+                    primary = themeColor,
+                    secondary = themeColor.copy(alpha = 0.9f),
+                    tertiary = themeColor.copy(alpha = 0.8f),
+                    onPrimary = if (themeColor.luminance() > 0.45f) Color.Black else WhiteText
+                )
+            } else {
+                FallbackLightColorScheme.copy(
+                    primary = themeColor,
+                    secondary = themeColor.copy(alpha = 0.9f),
+                    tertiary = themeColor.copy(alpha = 0.8f),
+                    onPrimary = if (themeColor.luminance() > 0.45f) Color.Black else WhiteText
+                )
+            }
         }
 
         darkTheme -> FallbackDarkColorScheme

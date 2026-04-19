@@ -1,6 +1,8 @@
 package com.krishnatune.ui.component
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,14 +32,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
@@ -45,27 +49,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.krishnatune.R
 import com.krishnatune.models.Song
-import com.krishnatune.ui.theme.bbh_bartle
-import com.krishnatune.ui.theme.rememberAdaptiveTypeScale
 import com.krishnatune.ui.theme.MiniPlayerBottomSpacing
 import com.krishnatune.ui.theme.MiniPlayerHeight
-import com.krishnatune.ui.theme.MiniPlayerBorder
-import com.krishnatune.ui.theme.MiniPlayerOverlay
-import com.krishnatune.ui.theme.MiniPlayerSurface
-import com.krishnatune.ui.theme.PlayerTrackBackground
-import com.krishnatune.ui.theme.PlayerTrackDot
+import com.krishnatune.ui.theme.PlayerPalette
+import com.krishnatune.ui.theme.rememberPlayerPalette
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MiniPlayer(song: Song, onClick: () -> Unit) {
     var isPlaying by rememberSaveable(song.id) { mutableStateOf(true) }
     var progress by rememberSaveable(song.id) { mutableStateOf(0.18f) }
-    val typeScale = rememberAdaptiveTypeScale()
+    val palette = rememberPlayerPalette(song.image)
 
     LaunchedEffect(isPlaying, song.id) {
         if (!isPlaying) return@LaunchedEffect
@@ -78,27 +77,33 @@ fun MiniPlayer(song: Song, onClick: () -> Unit) {
         }
     }
 
-    Surface(
+    Box(
         modifier = Modifier
             .padding(horizontal = 12.dp, vertical = MiniPlayerBottomSpacing)
             .fillMaxWidth()
             .height(MiniPlayerHeight)
             .clip(RoundedCornerShape(32.dp))
-            .clickable { onClick() },
-        color = MiniPlayerSurface,
-        shape = RoundedCornerShape(32.dp),
-        tonalElevation = 6.dp
+            .background(Brush.horizontalGradient(palette.gradientColors))
+            .border(1.dp, palette.outlineColor, RoundedCornerShape(32.dp))
+            .clickable { onClick() }
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.22f))
+        )
+
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 10.dp, vertical = 8.dp),
+                .padding(horizontal = 8.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             MiniPlayerProgressButton(
                 song = song,
                 isPlaying = isPlaying,
                 progress = progress,
+                palette = palette,
                 onTogglePlay = { isPlaying = !isPlaying }
             )
 
@@ -110,39 +115,33 @@ fun MiniPlayer(song: Song, onClick: () -> Unit) {
             ) {
                 Text(
                     text = song.title,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = bbh_bartle,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = (17f * typeScale.title).sp
-                    ),
+                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = palette.contentColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = song.artist,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontFamily = bbh_bartle,
-                        fontSize = (14f * typeScale.body).sp
-                    ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = palette.secondaryContentColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             }
 
-            IconButton(onClick = { }) {
-                Icon(
-                    imageVector = Icons.Outlined.PlaylistAdd,
-                    contentDescription = stringResource(id = R.string.cd_mini_player_add_to_playlist)
-                )
-            }
+            MiniPlayerActionButton(
+                icon = Icons.Outlined.PlaylistAdd,
+                contentDescription = stringResource(R.string.cd_mini_player_add_to_playlist),
+                palette = palette
+            )
 
-            IconButton(onClick = { }) {
-                Icon(
-                    imageVector = Icons.Outlined.FavoriteBorder,
-                    contentDescription = stringResource(id = R.string.cd_player_like)
-                )
-            }
+            MiniPlayerActionButton(
+                icon = Icons.Outlined.FavoriteBorder,
+                contentDescription = stringResource(R.string.cd_player_like),
+                palette = palette
+            )
         }
     }
 }
@@ -152,6 +151,7 @@ private fun MiniPlayerProgressButton(
     song: Song,
     isPlaying: Boolean,
     progress: Float,
+    palette: PlayerPalette,
     onTogglePlay: () -> Unit
 ) {
     Box(
@@ -165,7 +165,7 @@ private fun MiniPlayerProgressButton(
                 val topLeft = Offset((size.width - diameter) / 2, (size.height - diameter) / 2)
 
                 drawArc(
-                    color = PlayerTrackBackground,
+                    color = palette.outlineColor,
                     startAngle = 0f,
                     sweepAngle = 360f,
                     useCenter = false,
@@ -175,7 +175,7 @@ private fun MiniPlayerProgressButton(
                 )
 
                 drawArc(
-                    color = PlayerTrackDot,
+                    color = palette.accentContainerColor,
                     startAngle = -90f,
                     sweepAngle = 360f * progress.coerceIn(0f, 1f),
                     useCenter = false,
@@ -190,8 +190,8 @@ private fun MiniPlayerProgressButton(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(MiniPlayerOverlay)
-                .border(width = 1.dp, color = MiniPlayerBorder, shape = CircleShape)
+                .background(Color.Black.copy(alpha = 0.24f))
+                .border(width = 1.dp, color = palette.outlineColor, shape = CircleShape)
                 .clickable(onClick = onTogglePlay)
         ) {
             AsyncImage(
@@ -201,28 +201,44 @@ private fun MiniPlayerProgressButton(
                 modifier = Modifier.fillMaxSize()
             )
 
-            if (!isPlaying) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MiniPlayerOverlay),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.PlayArrow,
-                        contentDescription = stringResource(id = R.string.cd_mini_player_play),
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = if (isPlaying) 0.18f else 0.42f)),
+                contentAlignment = Alignment.Center
+            ) {
                 Icon(
-                    imageVector = Icons.Filled.Pause,
-                    contentDescription = stringResource(id = R.string.cd_mini_player_pause),
-                    tint = MaterialTheme.colorScheme.onSurface,
+                    imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                    contentDescription = if (isPlaying) {
+                        stringResource(R.string.cd_mini_player_pause)
+                    } else {
+                        stringResource(R.string.cd_mini_player_play)
+                    },
+                    tint = palette.contentColor,
                     modifier = Modifier.size(16.dp)
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun MiniPlayerActionButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    contentDescription: String,
+    palette: PlayerPalette
+) {
+    Surface(
+        modifier = Modifier.size(38.dp),
+        shape = CircleShape,
+        color = palette.surfaceColor
+    ) {
+        IconButton(onClick = { }) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = palette.contentColor
+            )
         }
     }
 }

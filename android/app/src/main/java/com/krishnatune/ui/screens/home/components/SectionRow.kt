@@ -13,7 +13,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.krishnatune.models.HomeSectionItem
-import com.krishnatune.ui.theme.bbh_bartle
 import com.krishnatune.ui.theme.rememberAdaptiveTypeScale
 import com.krishnatune.ui.utils.NetworkImage
 import kotlin.math.min
@@ -36,7 +35,6 @@ fun SectionRow(
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium.copy(
-                fontFamily = bbh_bartle,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = sectionTitleSize.sp
             ),
@@ -59,7 +57,8 @@ fun HomeItemCard(item: HomeSectionItem, onClick: () -> Unit) {
         modifier = Modifier
             .padding(horizontal = 8.dp)
             .width(140.dp)
-            .clickable { onClick() }
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             NetworkImage(

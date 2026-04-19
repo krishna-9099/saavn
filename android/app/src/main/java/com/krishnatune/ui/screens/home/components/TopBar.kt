@@ -37,11 +37,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.krishnatune.R
 import com.krishnatune.ui.theme.AdaptiveTypeScale
 import com.krishnatune.ui.theme.bbh_bartle
-import com.krishnatune.ui.theme.LibraryCardSurface
-import com.krishnatune.ui.theme.LibraryScreenBackground
-import com.krishnatune.ui.theme.ProfilePopupSwitchTrack
 import com.krishnatune.ui.theme.rememberAdaptiveTypeScale
-import com.krishnatune.ui.theme.WhiteText
 import kotlin.math.min
 
 @Composable
@@ -124,7 +120,7 @@ private fun ProfilePopup(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(28.dp),
-            color = LibraryCardSurface,
+            color = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp
         ) {
             Column(
@@ -157,7 +153,7 @@ private fun ProfilePopup(
 
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    color = LibraryScreenBackground,
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = RoundedCornerShape(18.dp)
                 ) {
                     Row(
@@ -187,7 +183,9 @@ private fun ProfilePopup(
                         OutlinedButton(
                             onClick = { },
                             shape = RoundedCornerShape(100.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = WhiteText)
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            )
                         ) {
                             Text(
                                 text = stringResource(R.string.profile_popup_logout),
@@ -253,7 +251,7 @@ private fun ProfileInfoCard(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = LibraryScreenBackground,
+        color = MaterialTheme.colorScheme.surfaceVariant,
         shape = RoundedCornerShape(18.dp)
     ) {
         Row(
@@ -286,7 +284,7 @@ private fun ProfileToggleCard(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = LibraryScreenBackground,
+        color = MaterialTheme.colorScheme.surfaceVariant,
         shape = RoundedCornerShape(18.dp)
     ) {
         Row(
@@ -321,14 +319,14 @@ private fun ProfileToggleCard(
                             imageVector = Icons.Outlined.Check,
                             contentDescription = null,
                             modifier = Modifier.size(SwitchDefaults.IconSize),
-                            tint = LibraryCardSurface
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 },
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = WhiteText,
-                    checkedTrackColor = ProfilePopupSwitchTrack,
-                    uncheckedThumbColor = WhiteText,
+                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             )

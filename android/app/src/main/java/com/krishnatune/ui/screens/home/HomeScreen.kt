@@ -1,5 +1,6 @@
 package com.krishnatune.ui.screens.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,7 +17,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -38,7 +38,11 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         Column(modifier = Modifier.fillMaxSize()) {
             TopBar(
                 title = stringResource(R.string.home_title),
@@ -107,10 +111,14 @@ fun HomeScreen(
             }
             FloatingActionButton(
                 onClick = { /* TODO */ },
-                containerColor = Color(0xFF006064).copy(alpha = 0.9f), // Teal/Dark blue from image
+                containerColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(56.dp)
             ) {
-                Icon(androidx.compose.material.icons.Icons.Default.Shuffle, contentDescription = "Shuffle", tint = Color.White)
+                Icon(
+                    androidx.compose.material.icons.Icons.Default.Shuffle,
+                    contentDescription = "Shuffle",
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
             }
         }
     }
@@ -132,9 +140,9 @@ fun VerticalListSection(
                 text = if (title.contains("Trending", ignoreCase = true)) "Quick picks" else title,
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontStyle = FontStyle.Italic,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4FC3F7) // Light blue from image
+                    fontWeight = FontWeight.Bold
                 ),
+                color = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             

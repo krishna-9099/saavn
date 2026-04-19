@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.7.0] - 2026-04-19
+
+### Added
+- Added artwork palette extraction utilities and a shared player palette model to drive Metrolist-style gradients in the mini player and full player.
+- Added a new Metrolist-inspired full player shell with gradient background, marquee metadata, rounded artwork stage, refreshed transport controls, and updated action chips.
+- Added a new pill-style mini player with artwork progress ring, gradient background, and theme-aware quick actions.
+
+### Changed
+- Reworked `KrishnaTuneTheme` into a Metrolist-style root theming system with seed-color support, Android dynamic color fallback, optional pure-black dark mode handling, and global typography wiring.
+- Updated app entry points to use the custom theme instead of raw `MaterialTheme`.
+- Switched navigation, home, top bar/profile popup, section cards, and library surfaces to read from the shared Material theme palette rather than old screen-specific color constants.
+- Promoted the Metro font family into the global typography scale so the rest of the app inherits the new theme system by default.
+
+### Fixed
+- Removed the incompatible `material-kolor` dependency path and kept the theme port within the project’s current Android Gradle Plugin and `compileSdk` baseline.
+- Resolved Compose compatibility issues in the new player implementation so `./gradlew assembleDebug` succeeds on the current toolchain.
+
 ## [0.6.8] - 2026-04-19
 
 ### Fixed

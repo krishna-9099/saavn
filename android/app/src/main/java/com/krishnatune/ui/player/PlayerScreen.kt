@@ -3,9 +3,12 @@ package com.krishnatune.ui.player
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +17,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -35,7 +37,6 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -47,12 +48,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -62,34 +64,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.krishnatune.R
 import com.krishnatune.models.Song
-import com.krishnatune.ui.theme.bbh_bartle
-import com.krishnatune.ui.theme.rememberAdaptiveTypeScale
-import com.krishnatune.ui.theme.PlayerArtworkCard
-import com.krishnatune.ui.theme.PlayerButtonSurface
-import com.krishnatune.ui.theme.PlayerControlSurface
-import com.krishnatune.ui.theme.PlayerGradientBottom
-import com.krishnatune.ui.theme.PlayerGradientTop
-import com.krishnatune.ui.theme.PlayerIconOnLight
 import com.krishnatune.ui.theme.PlayerHorizontalPadding
-import com.krishnatune.ui.theme.PlayerSecondaryText
-import com.krishnatune.ui.theme.PlayerTrackBackground
-import com.krishnatune.ui.theme.PlayerTrackDot
-import com.krishnatune.ui.theme.WhiteText
+import com.krishnatune.ui.theme.rememberPlayerPalette
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlayerScreen(song: Song, onClose: () -> Unit = {}) {
     val totalDurationSeconds = 196
     var progress by rememberSaveable(song.id) { mutableStateOf(4f / totalDurationSeconds) }
     var isPlaying by rememberSaveable(song.id) { mutableStateOf(true) }
-    val typeScale = rememberAdaptiveTypeScale()
+    val palette = rememberPlayerPalette(song.image)
 
     val coroutineScope = rememberCoroutineScope()
     val offsetY = remember { Animatable(0f) }
@@ -100,8 +91,8 @@ fun PlayerScreen(song: Song, onClose: () -> Unit = {}) {
         .coerceIn(0, totalDurationSeconds)
 
     val playButtonCorner by animateDpAsState(
-        targetValue = if (isPlaying) 26.dp else 34.dp,
-        label = "playButtonCorner"
+        targetValue = if (isPlaying) 28.dp else 36.dp,
+        label = "playerPlayButtonCorner"
     )
 
     LaunchedEffect(isPlaying, song.id) {
@@ -121,103 +112,104 @@ fun PlayerScreen(song: Song, onClose: () -> Unit = {}) {
             .onGloballyPositioned { screenHeight = it.size.height.toFloat() }
             .graphicsLayer { translationY = offsetY.value }
             .pointerInput(Unit) {
-                detectVerticalDragGestures(
+                detectDragGestures(
                     onDragEnd = {
-                        if (offsetY.value > screenHeight * 0.2f) {
+                        if (offsetY.value > screenHeight * 0.18f) {
                             coroutineScope.launch {
-                                offsetY.animateTo(screenHeight, animationSpec = tween(280))
+                                offsetY.animateTo(screenHeight, animationSpec = tween(260))
                                 onClose()
                             }
                         } else {
                             coroutineScope.launch {
-                                offsetY.animateTo(0f, animationSpec = tween(280))
+                                offsetY.animateTo(0f, animationSpec = tween(260))
                             }
                         }
                     },
-                    onVerticalDrag = { change, dragAmount ->
+                    onDrag = { change, dragAmount ->
                         change.consume()
                         coroutineScope.launch {
-                            val nextOffset = (offsetY.value + dragAmount).coerceAtLeast(0f)
-                            offsetY.snapTo(nextOffset)
+                            offsetY.snapTo((offsetY.value + dragAmount.y).coerceAtLeast(0f))
                         }
                     }
                 )
             }
-            .background(
-                brush = Brush.verticalGradient(colors = listOf(PlayerGradientTop, PlayerGradientBottom))
-            )
+            .background(Brush.verticalGradient(palette.gradientColors))
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Black.copy(alpha = 0.12f), Color.Black.copy(alpha = 0.72f))
+                    )
+                )
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .padding(horizontal = PlayerHorizontalPadding),
+                .padding(horizontal = PlayerHorizontalPadding, vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(6.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onClose) {
+                PlayerChromeButton(
+                    onClick = onClose,
+                    containerColor = palette.surfaceColor,
+                    contentColor = palette.contentColor
+                ) {
                     Icon(
                         imageVector = Icons.Filled.KeyboardArrowDown,
-                        contentDescription = stringResource(id = R.string.cd_player_close),
-                        tint = WhiteText,
-                        modifier = Modifier.size(28.dp)
+                        contentDescription = stringResource(R.string.cd_player_close)
                     )
                 }
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = stringResource(id = R.string.player_now_playing),
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontFamily = bbh_bartle,
-                            fontSize = (16f * typeScale.label).sp
-                        ),
-                        color = PlayerSecondaryText,
-                        textAlign = TextAlign.Center
+                        text = stringResource(R.string.player_now_playing),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = palette.secondaryContentColor
                     )
                     Text(
-                        text = stringResource(id = R.string.player_playlist_name),
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontFamily = bbh_bartle,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = (22f * typeScale.title).sp
-                        ),
-                        color = WhiteText,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
+                        text = stringResource(R.string.player_playlist_name),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = palette.contentColor
                     )
                 }
 
-                IconButton(onClick = { }) {
+                PlayerChromeButton(
+                    onClick = { },
+                    containerColor = palette.surfaceColor,
+                    contentColor = palette.contentColor
+                ) {
                     Icon(
                         imageVector = Icons.Filled.MoreHoriz,
-                        contentDescription = stringResource(id = R.string.cd_player_more),
-                        tint = WhiteText,
-                        modifier = Modifier.size(26.dp)
+                        contentDescription = stringResource(R.string.cd_player_more)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(340.dp),
-                shape = RoundedCornerShape(28.dp),
-                color = PlayerArtworkCard
+                    .height(360.dp),
+                shape = RoundedCornerShape(34.dp),
+                color = palette.surfaceColor,
+                tonalElevation = 12.dp
             ) {
                 AsyncImage(
                     model = song.image,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .border(1.dp, palette.outlineColor, RoundedCornerShape(34.dp))
                 )
             }
 
@@ -225,78 +217,78 @@ fun PlayerScreen(song: Song, onClose: () -> Unit = {}) {
 
             Text(
                 text = song.title,
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontFamily = bbh_bartle,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = (34f * typeScale.heading).sp
-                ),
-                color = WhiteText,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .basicMarquee(iterations = Int.MAX_VALUE),
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = palette.contentColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
+
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = song.artist,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = bbh_bartle,
-                    fontSize = (20f * typeScale.title).sp
-                ),
-                color = PlayerSecondaryText,
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.titleMedium,
+                color = palette.secondaryContentColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                PlayerTopActionButton(
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                PlayerActionChip(
                     icon = Icons.Filled.Share,
-                    contentDescription = stringResource(id = R.string.cd_player_share)
+                    contentDescription = stringResource(R.string.cd_player_share),
+                    palette = palette
                 )
-                PlayerTopActionButton(
+                PlayerActionChip(
                     icon = Icons.Filled.FavoriteBorder,
-                    contentDescription = stringResource(id = R.string.cd_player_like)
+                    contentDescription = stringResource(R.string.cd_player_like),
+                    palette = palette
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            Slider(
-                value = progress,
-                onValueChange = { progress = it },
+            Surface(
                 modifier = Modifier.fillMaxWidth(),
-                colors = SliderDefaults.colors(
-                    thumbColor = PlayerTrackDot,
-                    activeTrackColor = PlayerTrackDot,
-                    inactiveTrackColor = PlayerTrackBackground
-                )
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                shape = RoundedCornerShape(28.dp),
+                color = palette.surfaceColor,
+                tonalElevation = 8.dp
             ) {
-                Text(
-                    text = formatTime(elapsedSeconds),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = bbh_bartle,
-                        fontSize = (16f * typeScale.body).sp
-                    ),
-                    color = PlayerSecondaryText
-                )
-                Text(
-                    text = formatTime(totalDurationSeconds),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = bbh_bartle,
-                        fontSize = (16f * typeScale.body).sp
-                    ),
-                    color = PlayerSecondaryText
-                )
+                Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp)) {
+                    Slider(
+                        value = progress,
+                        onValueChange = { progress = it },
+                        colors = SliderDefaults.colors(
+                            thumbColor = palette.accentContainerColor,
+                            activeTrackColor = palette.accentContainerColor,
+                            inactiveTrackColor = palette.outlineColor
+                        )
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = formatTime(elapsedSeconds),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = palette.secondaryContentColor
+                        )
+                        Text(
+                            text = formatTime(totalDurationSeconds),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = palette.secondaryContentColor
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -308,53 +300,47 @@ fun PlayerScreen(song: Song, onClose: () -> Unit = {}) {
             ) {
                 PlayerTransportButton(
                     icon = Icons.Filled.SkipPrevious,
-                    contentDescription = stringResource(id = R.string.cd_player_previous)
+                    contentDescription = stringResource(R.string.cd_player_previous),
+                    palette = palette
                 )
 
                 Surface(
                     modifier = Modifier
-                        .width(190.dp)
-                        .height(74.dp)
+                        .width(198.dp)
+                        .height(76.dp)
                         .clip(RoundedCornerShape(playButtonCorner))
                         .clickable { isPlaying = !isPlaying },
                     shape = RoundedCornerShape(playButtonCorner),
-                    color = PlayerButtonSurface
+                    color = palette.accentContainerColor
                 ) {
                     Row(
                         modifier = Modifier.fillMaxSize(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                             contentDescription = if (isPlaying) {
-                                stringResource(id = R.string.cd_player_pause)
+                                stringResource(R.string.cd_player_pause)
                             } else {
-                                stringResource(id = R.string.cd_player_play)
+                                stringResource(R.string.cd_player_play)
                             },
-                            tint = PlayerIconOnLight,
-                            modifier = Modifier.size(32.dp)
+                            tint = palette.accentContentColor,
+                            modifier = Modifier.size(30.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = if (isPlaying) {
-                                stringResource(id = R.string.player_pause)
-                            } else {
-                                stringResource(id = R.string.player_play)
-                            },
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontFamily = bbh_bartle,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = (21f * typeScale.title).sp
-                            ),
-                            color = PlayerIconOnLight
+                            text = if (isPlaying) stringResource(R.string.player_pause) else stringResource(R.string.player_play),
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = palette.accentContentColor
                         )
                     }
                 }
 
                 PlayerTransportButton(
                     icon = Icons.Filled.SkipNext,
-                    contentDescription = stringResource(id = R.string.cd_player_next)
+                    contentDescription = stringResource(R.string.cd_player_next),
+                    palette = palette
                 )
             }
 
@@ -362,20 +348,22 @@ fun PlayerScreen(song: Song, onClose: () -> Unit = {}) {
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                PlayerOptionButton(
+                PlayerFooterButton(
                     icon = Icons.Filled.QueueMusic,
-                    contentDescription = stringResource(id = R.string.cd_player_queue)
+                    contentDescription = stringResource(R.string.cd_player_queue),
+                    palette = palette
                 )
-                PlayerOptionButton(
+                PlayerFooterButton(
                     icon = Icons.Filled.FormatAlignLeft,
-                    contentDescription = stringResource(id = R.string.cd_player_lyrics)
+                    contentDescription = stringResource(R.string.cd_player_lyrics),
+                    palette = palette
                 )
-                PlayerOptionButton(
+                PlayerFooterButton(
                     icon = Icons.Filled.Repeat,
-                    contentDescription = stringResource(id = R.string.cd_player_repeat)
+                    contentDescription = stringResource(R.string.cd_player_repeat),
+                    palette = palette
                 )
             }
         }
@@ -383,61 +371,110 @@ fun PlayerScreen(song: Song, onClose: () -> Unit = {}) {
 }
 
 @Composable
-private fun PlayerTopActionButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    contentDescription: String
+private fun PlayerChromeButton(
+    onClick: () -> Unit,
+    containerColor: Color,
+    contentColor: Color,
+    content: @Composable () -> Unit
 ) {
-    IconButton(
-        onClick = { },
-        colors = IconButtonDefaults.iconButtonColors(
-            containerColor = PlayerControlSurface,
-            contentColor = WhiteText
-        )
+    Surface(
+        modifier = Modifier.size(44.dp),
+        shape = CircleShape,
+        color = containerColor
     ) {
-        Icon(imageVector = icon, contentDescription = contentDescription)
+        IconButton(onClick = onClick) {
+            Box(contentAlignment = Alignment.Center) {
+                androidx.compose.runtime.CompositionLocalProvider(
+                    androidx.compose.material3.LocalContentColor provides contentColor
+                ) {
+                    content()
+                }
+            }
+        }
     }
 }
 
 @Composable
-private fun PlayerTransportButton(
+private fun PlayerActionChip(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    contentDescription: String
+    contentDescription: String,
+    palette: com.krishnatune.ui.theme.PlayerPalette
 ) {
     Surface(
-        modifier = Modifier.size(62.dp),
-        shape = CircleShape,
-        color = PlayerControlSurface
+        modifier = Modifier.size(width = 82.dp, height = 52.dp),
+        shape = RoundedCornerShape(18.dp),
+        color = palette.surfaceColor
     ) {
-        Box(contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable { },
+            contentAlignment = Alignment.Center
+        ) {
             Icon(
                 imageVector = icon,
                 contentDescription = contentDescription,
-                tint = WhiteText,
-                modifier = Modifier.size(30.dp)
+                tint = palette.contentColor
             )
         }
     }
 }
 
 @Composable
-private fun PlayerOptionButton(
+private fun PlayerTransportButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    contentDescription: String
+    contentDescription: String,
+    palette: com.krishnatune.ui.theme.PlayerPalette
 ) {
-    IconButton(
-        onClick = { },
-        colors = IconButtonDefaults.iconButtonColors(
-            containerColor = PlayerControlSurface,
-            contentColor = PlayerSecondaryText
-        )
+    Surface(
+        modifier = Modifier.size(64.dp),
+        shape = CircleShape,
+        color = palette.surfaceColor
     ) {
-        Icon(imageVector = icon, contentDescription = contentDescription)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable { },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = palette.contentColor,
+                modifier = Modifier.size(28.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun PlayerFooterButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    contentDescription: String,
+    palette: com.krishnatune.ui.theme.PlayerPalette
+) {
+    Surface(
+        modifier = Modifier.size(54.dp),
+        shape = RoundedCornerShape(18.dp),
+        color = palette.surfaceColor
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable { },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = palette.secondaryContentColor
+            )
+        }
     }
 }
 
 private fun formatTime(totalSeconds: Int): String {
-    val safeSeconds = totalSeconds.coerceAtLeast(0)
-    val minutes = safeSeconds / 60
-    val seconds = safeSeconds % 60
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
     return "%d:%02d".format(minutes, seconds)
 }
