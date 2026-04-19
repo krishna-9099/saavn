@@ -1,7 +1,6 @@
 package com.krishnatune.ui.player
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -11,9 +10,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,20 +27,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FormatAlignLeft
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.NightlightRound
+import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,62 +51,55 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.krishnatune.R
 import com.krishnatune.models.Song
-import com.krishnatune.ui.theme.PlayerHorizontalPadding
-import com.krishnatune.ui.theme.rememberPlayerPalette
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
+private val PlayerBackground = Color(0xFF17180F)
+private val PlayerMutedText = Color(0xFFD8D2C2)
+private val PlayerPrimaryText = Color(0xFFF9F5EA)
+private val PlayerOutline = Color(0x66B9B09A)
+private val PlayerDarkButton = Color(0xFF212216)
+private val PlayerWhiteButton = Color(0xFFF6F4EC)
+private val PlayerDarkIcon = Color(0xFF15150F)
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlayerScreen(song: Song, onClose: () -> Unit = {}) {
-    val totalDurationSeconds = 196
-    var progress by rememberSaveable(song.id) { mutableStateOf(4f / totalDurationSeconds) }
-    var isPlaying by rememberSaveable(song.id) { mutableStateOf(true) }
-    val palette = rememberPlayerPalette(song.image)
-
-    val coroutineScope = rememberCoroutineScope()
-    val offsetY = remember { Animatable(0f) }
+    val totalDurationSeconds = 185
+    var progress by rememberSaveable(song.id) { mutableStateOf(165f / totalDurationSeconds) }
     var screenHeight by remember { mutableStateOf(0f) }
+    val offsetY = remember { Animatable(0f) }
+    val coroutineScope = rememberCoroutineScope()
 
-    val elapsedSeconds = (progress * totalDurationSeconds)
-        .roundToInt()
-        .coerceIn(0, totalDurationSeconds)
-
-    val playButtonCorner by animateDpAsState(
-        targetValue = if (isPlaying) 28.dp else 36.dp,
-        label = "playerPlayButtonCorner"
-    )
-
-    LaunchedEffect(isPlaying, song.id) {
-        if (!isPlaying) return@LaunchedEffect
+    LaunchedEffect(song.id) {
         while (isActive) {
             delay(1000)
             progress = (progress + 1f / totalDurationSeconds).coerceAtMost(1f)
-            if (progress >= 1f) {
-                isPlaying = false
-            }
         }
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(PlayerBackground)
             .onGloballyPositioned { screenHeight = it.size.height.toFloat() }
             .graphicsLayer { translationY = offsetY.value }
             .pointerInput(Unit) {
@@ -116,12 +107,12 @@ fun PlayerScreen(song: Song, onClose: () -> Unit = {}) {
                     onDragEnd = {
                         if (offsetY.value > screenHeight * 0.18f) {
                             coroutineScope.launch {
-                                offsetY.animateTo(screenHeight, animationSpec = tween(260))
+                                offsetY.animateTo(screenHeight, animationSpec = tween(240))
                                 onClose()
                             }
                         } else {
                             coroutineScope.launch {
-                                offsetY.animateTo(0f, animationSpec = tween(260))
+                                offsetY.animateTo(0f, animationSpec = tween(240))
                             }
                         }
                     },
@@ -133,185 +124,155 @@ fun PlayerScreen(song: Song, onClose: () -> Unit = {}) {
                     }
                 )
             }
-            .background(Brush.verticalGradient(palette.gradientColors))
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(Color.Black.copy(alpha = 0.12f), Color.Black.copy(alpha = 0.72f))
-                    )
-                )
-        )
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .padding(horizontal = PlayerHorizontalPadding, vertical = 12.dp),
+                .padding(horizontal = 26.dp, vertical = 14.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                PlayerChromeButton(
-                    onClick = onClose,
-                    containerColor = palette.surfaceColor,
-                    contentColor = palette.contentColor
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.KeyboardArrowDown,
-                        contentDescription = stringResource(R.string.cd_player_close)
-                    )
-                }
+            Text(
+                text = stringResource(R.string.player_now_playing),
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontFamily = FontFamily.Serif,
+                    fontStyle = FontStyle.Italic,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp
+                ),
+                color = PlayerPrimaryText
+            )
 
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = stringResource(R.string.player_now_playing),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = palette.secondaryContentColor
-                    )
-                    Text(
-                        text = stringResource(R.string.player_playlist_name),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = palette.contentColor
-                    )
-                }
+            Spacer(modifier = Modifier.height(6.dp))
 
-                PlayerChromeButton(
-                    onClick = { },
-                    containerColor = palette.surfaceColor,
-                    contentColor = palette.contentColor
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.MoreHoriz,
-                        contentDescription = stringResource(R.string.cd_player_more)
-                    )
-                }
-            }
+            Text(
+                text = stringResource(R.string.player_playlist_name),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily.Serif,
+                    fontStyle = FontStyle.Italic,
+                    fontSize = 15.sp,
+                    lineHeight = 20.sp
+                ),
+                color = PlayerMutedText
+            )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(34.dp))
 
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(360.dp),
-                shape = RoundedCornerShape(34.dp),
-                color = palette.surfaceColor,
-                tonalElevation = 12.dp
+                    .aspectRatio(1f),
+                shape = RoundedCornerShape(12.dp),
+                color = Color(0x10FFFFFF)
             ) {
                 AsyncImage(
                     model = song.image,
                     contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .border(1.dp, palette.outlineColor, RoundedCornerShape(34.dp))
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = song.title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .basicMarquee(iterations = Int.MAX_VALUE),
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = palette.contentColor,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = song.artist,
-                modifier = Modifier.fillMaxWidth(),
-                style = MaterialTheme.typography.titleMedium,
-                color = palette.secondaryContentColor,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                PlayerActionChip(
-                    icon = Icons.Filled.Share,
-                    contentDescription = stringResource(R.string.cd_player_share),
-                    palette = palette
-                )
-                PlayerActionChip(
-                    icon = Icons.Filled.FavoriteBorder,
-                    contentDescription = stringResource(R.string.cd_player_like),
-                    palette = palette
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(28.dp),
-                color = palette.surfaceColor,
-                tonalElevation = 8.dp
-            ) {
-                Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp)) {
-                    Slider(
-                        value = progress,
-                        onValueChange = { progress = it },
-                        colors = SliderDefaults.colors(
-                            thumbColor = palette.accentContainerColor,
-                            activeTrackColor = palette.accentContainerColor,
-                            inactiveTrackColor = palette.outlineColor
-                        )
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = formatTime(elapsedSeconds),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = palette.secondaryContentColor
-                        )
-                        Text(
-                            text = formatTime(totalDurationSeconds),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = palette.secondaryContentColor
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                PlayerTransportButton(
-                    icon = Icons.Filled.SkipPrevious,
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = song.title,
+                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontStyle = FontStyle.Italic,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 29.sp,
+                            lineHeight = 34.sp
+                        ),
+                        color = PlayerPrimaryText,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = song.artist,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontStyle = FontStyle.Italic,
+                            fontSize = 18.sp
+                        ),
+                        color = PlayerPrimaryText,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                PlayerSquareButton(
+                    icon = Icons.Filled.Share,
+                    contentDescription = stringResource(R.string.cd_player_share)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                PlayerSquareButton(
+                    icon = Icons.Filled.FavoriteBorder,
+                    contentDescription = stringResource(R.string.cd_player_like)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(26.dp))
+
+            PlayerProgressBar(
+                progress = progress,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = formatTime((progress * totalDurationSeconds).roundToInt().coerceIn(0, totalDurationSeconds)),
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 16.sp
+                    ),
+                    color = PlayerPrimaryText
+                )
+                Text(
+                    text = formatTime(totalDurationSeconds),
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 16.sp
+                    ),
+                    color = PlayerPrimaryText
+                )
+            }
+
+            Spacer(modifier = Modifier.height(34.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                PlayerCircleTransportButton(
+                    icon = Icons.Filled.KeyboardArrowLeft,
                     contentDescription = stringResource(R.string.cd_player_previous),
-                    palette = palette
+                    modifier = Modifier.size(88.dp)
                 )
 
                 Surface(
                     modifier = Modifier
-                        .width(198.dp)
-                        .height(76.dp)
-                        .clip(RoundedCornerShape(playButtonCorner))
-                        .clickable { isPlaying = !isPlaying },
-                    shape = RoundedCornerShape(playButtonCorner),
-                    color = palette.accentContainerColor
+                        .width(200.dp)
+                        .height(84.dp)
+                        .clip(RoundedCornerShape(42.dp))
+                        .clickable { },
+                    color = PlayerWhiteButton,
+                    shape = RoundedCornerShape(42.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxSize(),
@@ -319,75 +280,81 @@ fun PlayerScreen(song: Song, onClose: () -> Unit = {}) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                            contentDescription = if (isPlaying) {
-                                stringResource(R.string.cd_player_pause)
-                            } else {
-                                stringResource(R.string.cd_player_play)
-                            },
-                            tint = palette.accentContentColor,
-                            modifier = Modifier.size(30.dp)
+                            imageVector = Icons.Filled.Pause,
+                            contentDescription = stringResource(R.string.cd_player_pause),
+                            tint = PlayerDarkIcon,
+                            modifier = Modifier.size(34.dp)
                         )
-                        Spacer(modifier = Modifier.width(10.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = if (isPlaying) stringResource(R.string.player_pause) else stringResource(R.string.player_play),
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                            color = palette.accentContentColor
+                            text = stringResource(R.string.player_pause),
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontFamily = FontFamily.Serif,
+                                fontStyle = FontStyle.Italic,
+                                fontSize = 22.sp
+                            ),
+                            color = PlayerDarkIcon
                         )
                     }
                 }
 
-                PlayerTransportButton(
-                    icon = Icons.Filled.SkipNext,
+                PlayerCircleTransportButton(
+                    icon = Icons.Filled.KeyboardArrowRight,
                     contentDescription = stringResource(R.string.cd_player_next),
-                    palette = palette
+                    modifier = Modifier.size(88.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(36.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                PlayerFooterButton(
-                    icon = Icons.Filled.QueueMusic,
-                    contentDescription = stringResource(R.string.cd_player_queue),
-                    palette = palette
-                )
-                PlayerFooterButton(
-                    icon = Icons.Filled.FormatAlignLeft,
-                    contentDescription = stringResource(R.string.cd_player_lyrics),
-                    palette = palette
-                )
-                PlayerFooterButton(
-                    icon = Icons.Filled.Repeat,
-                    contentDescription = stringResource(R.string.cd_player_repeat),
-                    palette = palette
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun PlayerChromeButton(
-    onClick: () -> Unit,
-    containerColor: Color,
-    contentColor: Color,
-    content: @Composable () -> Unit
-) {
-    Surface(
-        modifier = Modifier.size(44.dp),
-        shape = CircleShape,
-        color = containerColor
-    ) {
-        IconButton(onClick = onClick) {
-            Box(contentAlignment = Alignment.Center) {
-                androidx.compose.runtime.CompositionLocalProvider(
-                    androidx.compose.material3.LocalContentColor provides contentColor
+                Row(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    content()
+                    PlayerOutlineToolButton(
+                        icon = Icons.Filled.QueueMusic,
+                        contentDescription = stringResource(R.string.cd_player_queue)
+                    )
+                    PlayerOutlineToolButton(
+                        icon = Icons.Filled.NightlightRound,
+                        contentDescription = stringResource(R.string.cd_player_sleep)
+                    )
+                    PlayerOutlineToolButton(
+                        icon = Icons.Filled.OpenInFull,
+                        contentDescription = stringResource(R.string.cd_player_expand)
+                    )
+                    PlayerOutlineToolButton(
+                        icon = Icons.Filled.FormatAlignLeft,
+                        contentDescription = stringResource(R.string.cd_player_lyrics)
+                    )
+                    PlayerOutlineToolButton(
+                        icon = Icons.Filled.Repeat,
+                        contentDescription = stringResource(R.string.cd_player_repeat)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Surface(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .clickable { },
+                    shape = CircleShape,
+                    color = PlayerWhiteButton
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = stringResource(R.string.cd_player_more),
+                            tint = PlayerDarkIcon,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                 }
             }
         }
@@ -395,82 +362,147 @@ private fun PlayerChromeButton(
 }
 
 @Composable
-private fun PlayerActionChip(
+private fun PlayerSquareButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    contentDescription: String,
-    palette: com.krishnatune.ui.theme.PlayerPalette
+    contentDescription: String
 ) {
     Surface(
-        modifier = Modifier.size(width = 82.dp, height = 52.dp),
-        shape = RoundedCornerShape(18.dp),
-        color = palette.surfaceColor
+        modifier = Modifier
+            .size(72.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .clickable { },
+        color = PlayerWhiteButton,
+        shape = RoundedCornerShape(10.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable { },
-            contentAlignment = Alignment.Center
-        ) {
+        Box(contentAlignment = Alignment.Center) {
             Icon(
                 imageVector = icon,
                 contentDescription = contentDescription,
-                tint = palette.contentColor
+                tint = PlayerDarkIcon,
+                modifier = Modifier.size(34.dp)
             )
         }
     }
 }
 
 @Composable
-private fun PlayerTransportButton(
+private fun PlayerCircleTransportButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     contentDescription: String,
-    palette: com.krishnatune.ui.theme.PlayerPalette
+    modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = Modifier.size(64.dp),
+        modifier = modifier
+            .clip(CircleShape)
+            .clickable { },
         shape = CircleShape,
-        color = palette.surfaceColor
+        color = PlayerDarkButton
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable { },
-            contentAlignment = Alignment.Center
-        ) {
+        Box(contentAlignment = Alignment.Center) {
             Icon(
                 imageVector = icon,
                 contentDescription = contentDescription,
-                tint = palette.contentColor,
-                modifier = Modifier.size(28.dp)
+                tint = PlayerPrimaryText,
+                modifier = Modifier.size(38.dp)
             )
         }
     }
 }
 
 @Composable
-private fun PlayerFooterButton(
+private fun PlayerOutlineToolButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    contentDescription: String,
-    palette: com.krishnatune.ui.theme.PlayerPalette
+    contentDescription: String
 ) {
     Surface(
-        modifier = Modifier.size(54.dp),
-        shape = RoundedCornerShape(18.dp),
-        color = palette.surfaceColor
+        modifier = Modifier
+            .size(width = 40.dp, height = 56.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { },
+        color = Color.Transparent,
+        shape = RoundedCornerShape(12.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .clickable { },
+                .border(1.dp, PlayerOutline, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = contentDescription,
-                tint = palette.secondaryContentColor
+                tint = PlayerMutedText,
+                modifier = Modifier.size(24.dp)
             )
         }
     }
+}
+
+@Composable
+private fun PlayerProgressBar(
+    progress: Float,
+    modifier: Modifier = Modifier
+) {
+    val clampedProgress = progress.coerceIn(0f, 1f)
+
+    BoxWithConstraints(
+        modifier = modifier.height(34.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        val thumbZoneWidth = 58.dp
+        val trackWidth = maxWidth - thumbZoneWidth
+        val thumbOffset = calculateThumbOffset(trackWidth, clampedProgress)
+
+        Box(
+            modifier = Modifier
+                .width(trackWidth)
+                .height(18.dp)
+                .clip(RoundedCornerShape(9.dp))
+                .background(Color.White.copy(alpha = 0.98f))
+        ) {
+            Box(
+                modifier = Modifier
+                    .width((trackWidth * clampedProgress).coerceAtLeast(18.dp))
+                    .fillMaxSize()
+                    .background(Color.White)
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .padding(start = thumbOffset)
+                .width(58.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(5.dp)
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color.White)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Box(
+                modifier = Modifier
+                    .size(width = 38.dp, height = 28.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(PlayerDarkButton),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(PlayerMutedText)
+                )
+            }
+        }
+    }
+}
+
+private fun calculateThumbOffset(trackWidth: Dp, progress: Float): Dp {
+    val knobPadding = 18.dp
+    return (trackWidth - knobPadding) * progress.coerceIn(0f, 1f)
 }
 
 private fun formatTime(totalSeconds: Int): String {

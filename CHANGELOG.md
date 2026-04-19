@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.7.2] - 2026-04-19
+
+### Changed
+- Restyled the full player to match the provided reference more closely with a flat dark background, centered serif header, square artwork, left-aligned metadata, white share/like tiles, custom scrubber, circular transport buttons, large white pause pill, and bottom utility row with a white overflow action.
+
+### Fixed
+- Tightened full-player spacing and control sizing so the layout fits phone-width screens without overflow while preserving the intended reference proportions.
+
 ## [0.7.1] - 2026-04-19
 
 ### Fixed
