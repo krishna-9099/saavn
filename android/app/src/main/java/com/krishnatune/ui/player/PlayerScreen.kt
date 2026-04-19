@@ -18,12 +18,15 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FormatAlignLeft
@@ -56,12 +59,12 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -125,237 +128,333 @@ fun PlayerScreen(song: Song, onClose: () -> Unit = {}) {
                 )
             }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .padding(horizontal = 26.dp, vertical = 14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = stringResource(R.string.player_now_playing),
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontFamily = FontFamily.Serif,
-                    fontStyle = FontStyle.Italic,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp
-                ),
-                color = PlayerPrimaryText
-            )
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val isVeryCompact = maxHeight < 700.dp
+            val isCompact = maxHeight < 780.dp
+            val horizontalPadding = if (isCompact) 20.dp else 26.dp
+            val verticalPadding = if (isCompact) 10.dp else 14.dp
+            val artworkWidthFraction = when {
+                isVeryCompact -> 0.72f
+                isCompact -> 0.82f
+                else -> 0.9f
+            }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            val nowPlayingSize = if (isCompact) 16.sp else 18.sp
+            val playlistSize = if (isCompact) 14.sp else 15.sp
+            val songTitleSize = when {
+                isVeryCompact -> 24.sp
+                isCompact -> 26.sp
+                else -> 29.sp
+            }
+            val songArtistSize = if (isCompact) 16.sp else 18.sp
+            val timeTextSize = if (isCompact) 14.sp else 16.sp
 
-            Text(
-                text = stringResource(R.string.player_playlist_name),
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = FontFamily.Serif,
-                    fontStyle = FontStyle.Italic,
-                    fontSize = 15.sp,
-                    lineHeight = 20.sp
-                ),
-                color = PlayerMutedText
-            )
+            val squareButtonSize = if (isCompact) 60.dp else 72.dp
+            val squareButtonIconSize = if (isCompact) 28.dp else 34.dp
 
-            Spacer(modifier = Modifier.height(34.dp))
+            val transportButtonSize = when {
+                isVeryCompact -> 70.dp
+                isCompact -> 78.dp
+                else -> 88.dp
+            }
+            val transportIconSize = if (isCompact) 32.dp else 38.dp
 
-            Surface(
+            val pauseButtonWidth = when {
+                isVeryCompact -> 160.dp
+                isCompact -> 180.dp
+                else -> 200.dp
+            }
+            val pauseButtonHeight = when {
+                isVeryCompact -> 68.dp
+                isCompact -> 76.dp
+                else -> 84.dp
+            }
+            val pauseTextSize = if (isCompact) 20.sp else 22.sp
+            val pauseIconSize = if (isCompact) 30.dp else 34.dp
+
+            val utilityButtonWidth = if (isCompact) 36.dp else 40.dp
+            val utilityButtonHeight = if (isCompact) 50.dp else 56.dp
+            val utilityIconSize = if (isCompact) 22.dp else 24.dp
+            val overflowButtonSize = if (isCompact) 56.dp else 64.dp
+            val overflowIconSize = if (isCompact) 26.dp else 28.dp
+
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f),
-                shape = RoundedCornerShape(12.dp),
-                color = Color(0x10FFFFFF)
-            ) {
-                AsyncImage(
-                    model = song.image,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }
-
-            Spacer(modifier = Modifier.height(28.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = song.title,
-                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontFamily = FontFamily.Serif,
-                            fontStyle = FontStyle.Italic,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 29.sp,
-                            lineHeight = 34.sp
-                        ),
-                        color = PlayerPrimaryText,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = song.artist,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontFamily = FontFamily.Serif,
-                            fontStyle = FontStyle.Italic,
-                            fontSize = 18.sp
-                        ),
-                        color = PlayerPrimaryText,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                PlayerSquareButton(
-                    icon = Icons.Filled.Share,
-                    contentDescription = stringResource(R.string.cd_player_share)
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                PlayerSquareButton(
-                    icon = Icons.Filled.FavoriteBorder,
-                    contentDescription = stringResource(R.string.cd_player_like)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(26.dp))
-
-            PlayerProgressBar(
-                progress = progress,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = horizontalPadding, vertical = verticalPadding),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = formatTime((progress * totalDurationSeconds).roundToInt().coerceIn(0, totalDurationSeconds)),
-                    style = MaterialTheme.typography.bodyLarge.copy(
+                    text = stringResource(R.string.player_now_playing),
+                    style = MaterialTheme.typography.titleLarge.copy(
                         fontFamily = FontFamily.Serif,
-                        fontSize = 16.sp
+                        fontStyle = FontStyle.Italic,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = nowPlayingSize
                     ),
                     color = PlayerPrimaryText
                 )
+
+                Spacer(modifier = Modifier.height(if (isCompact) 4.dp else 6.dp))
+
                 Text(
-                    text = formatTime(totalDurationSeconds),
-                    style = MaterialTheme.typography.bodyLarge.copy(
+                    text = stringResource(R.string.player_playlist_name),
+                    style = MaterialTheme.typography.titleMedium.copy(
                         fontFamily = FontFamily.Serif,
-                        fontSize = 16.sp
+                        fontStyle = FontStyle.Italic,
+                        fontSize = playlistSize,
+                        lineHeight = if (isCompact) 18.sp else 20.sp
                     ),
-                    color = PlayerPrimaryText
+                    color = PlayerMutedText
                 )
-            }
 
-            Spacer(modifier = Modifier.height(34.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                PlayerCircleTransportButton(
-                    icon = Icons.Filled.KeyboardArrowLeft,
-                    contentDescription = stringResource(R.string.cd_player_previous),
-                    modifier = Modifier.size(88.dp)
+                Spacer(
+                    modifier = Modifier.height(
+                        if (isVeryCompact) 20.dp else if (isCompact) 26.dp else 34.dp
+                    )
                 )
 
                 Surface(
                     modifier = Modifier
-                        .width(200.dp)
-                        .height(84.dp)
-                        .clip(RoundedCornerShape(42.dp))
-                        .clickable { },
-                    color = PlayerWhiteButton,
-                    shape = RoundedCornerShape(42.dp)
+                        .fillMaxWidth(artworkWidthFraction)
+                        .aspectRatio(1f),
+                    shape = RoundedCornerShape(if (isCompact) 10.dp else 12.dp),
+                    color = Color(0x10FFFFFF)
                 ) {
-                    Row(
+                    AsyncImage(
+                        model = song.image,
+                        contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Pause,
-                            contentDescription = stringResource(R.string.cd_player_pause),
-                            tint = PlayerDarkIcon,
-                            modifier = Modifier.size(34.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                Spacer(
+                    modifier = Modifier.height(
+                        if (isVeryCompact) 16.dp else if (isCompact) 22.dp else 28.dp
+                    )
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = stringResource(R.string.player_pause),
-                            style = MaterialTheme.typography.titleLarge.copy(
+                            text = song.title,
+                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
+                            style = MaterialTheme.typography.headlineSmall.copy(
                                 fontFamily = FontFamily.Serif,
                                 fontStyle = FontStyle.Italic,
-                                fontSize = 22.sp
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = songTitleSize,
+                                lineHeight = if (isCompact) 30.sp else 34.sp
                             ),
-                            color = PlayerDarkIcon
+                            color = PlayerPrimaryText,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = song.artist,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontFamily = FontFamily.Serif,
+                                fontStyle = FontStyle.Italic,
+                                fontSize = songArtistSize
+                            ),
+                            color = PlayerPrimaryText,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
+
+                    Spacer(modifier = Modifier.width(if (isCompact) 10.dp else 12.dp))
+
+                    PlayerSquareButton(
+                        icon = Icons.Filled.Share,
+                        contentDescription = stringResource(R.string.cd_player_share),
+                        size = squareButtonSize,
+                        iconSize = squareButtonIconSize,
+                    )
+                    Spacer(modifier = Modifier.width(if (isCompact) 8.dp else 10.dp))
+                    PlayerSquareButton(
+                        icon = Icons.Filled.FavoriteBorder,
+                        contentDescription = stringResource(R.string.cd_player_like),
+                        size = squareButtonSize,
+                        iconSize = squareButtonIconSize,
+                    )
                 }
 
-                PlayerCircleTransportButton(
-                    icon = Icons.Filled.KeyboardArrowRight,
-                    contentDescription = stringResource(R.string.cd_player_next),
-                    modifier = Modifier.size(88.dp)
+                Spacer(modifier = Modifier.height(if (isCompact) 20.dp else 26.dp))
+
+                PlayerProgressBar(
+                    progress = progress,
+                    modifier = Modifier.fillMaxWidth()
                 )
-            }
 
-            Spacer(modifier = Modifier.height(36.dp))
+                Spacer(modifier = Modifier.height(if (isCompact) 6.dp else 8.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
                 Row(
-                    modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    PlayerOutlineToolButton(
-                        icon = Icons.Filled.QueueMusic,
-                        contentDescription = stringResource(R.string.cd_player_queue)
+                    Text(
+                        text = formatTime(
+                            (progress * totalDurationSeconds)
+                                .roundToInt()
+                                .coerceIn(0, totalDurationSeconds)
+                        ),
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontSize = timeTextSize
+                        ),
+                        color = PlayerPrimaryText
                     )
-                    PlayerOutlineToolButton(
-                        icon = Icons.Filled.NightlightRound,
-                        contentDescription = stringResource(R.string.cd_player_sleep)
-                    )
-                    PlayerOutlineToolButton(
-                        icon = Icons.Filled.OpenInFull,
-                        contentDescription = stringResource(R.string.cd_player_expand)
-                    )
-                    PlayerOutlineToolButton(
-                        icon = Icons.Filled.FormatAlignLeft,
-                        contentDescription = stringResource(R.string.cd_player_lyrics)
-                    )
-                    PlayerOutlineToolButton(
-                        icon = Icons.Filled.Repeat,
-                        contentDescription = stringResource(R.string.cd_player_repeat)
+                    Text(
+                        text = formatTime(totalDurationSeconds),
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontSize = timeTextSize
+                        ),
+                        color = PlayerPrimaryText
                     )
                 }
 
-                Spacer(modifier = Modifier.width(14.dp))
+                Spacer(
+                    modifier = Modifier.height(
+                        if (isVeryCompact) 18.dp else if (isCompact) 26.dp else 34.dp
+                    )
+                )
 
-                Surface(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape)
-                        .clickable { },
-                    shape = CircleShape,
-                    color = PlayerWhiteButton
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = stringResource(R.string.cd_player_more),
-                            tint = PlayerDarkIcon,
-                            modifier = Modifier.size(28.dp)
+                    PlayerCircleTransportButton(
+                        icon = Icons.Filled.KeyboardArrowLeft,
+                        contentDescription = stringResource(R.string.cd_player_previous),
+                        modifier = Modifier.size(transportButtonSize),
+                        iconSize = transportIconSize,
+                    )
+
+                    Surface(
+                        modifier = Modifier
+                            .width(pauseButtonWidth)
+                            .height(pauseButtonHeight)
+                            .clip(RoundedCornerShape(pauseButtonHeight / 2))
+                            .clickable { },
+                        color = PlayerWhiteButton,
+                        shape = RoundedCornerShape(pauseButtonHeight / 2)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Pause,
+                                contentDescription = stringResource(R.string.cd_player_pause),
+                                tint = PlayerDarkIcon,
+                                modifier = Modifier.size(pauseIconSize)
+                            )
+                            Spacer(modifier = Modifier.width(if (isCompact) 10.dp else 12.dp))
+                            Text(
+                                text = stringResource(R.string.player_pause),
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontFamily = FontFamily.Serif,
+                                    fontStyle = FontStyle.Italic,
+                                    fontSize = pauseTextSize
+                                ),
+                                color = PlayerDarkIcon
+                            )
+                        }
+                    }
+
+                    PlayerCircleTransportButton(
+                        icon = Icons.Filled.KeyboardArrowRight,
+                        contentDescription = stringResource(R.string.cd_player_next),
+                        modifier = Modifier.size(transportButtonSize),
+                        iconSize = transportIconSize,
+                    )
+                }
+
+                Spacer(
+                    modifier = Modifier.height(
+                        if (isVeryCompact) 18.dp else if (isCompact) 26.dp else 36.dp
+                    )
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(if (isCompact) 4.dp else 6.dp)
+                    ) {
+                        PlayerOutlineToolButton(
+                            icon = Icons.Filled.QueueMusic,
+                            contentDescription = stringResource(R.string.cd_player_queue),
+                            buttonWidth = utilityButtonWidth,
+                            buttonHeight = utilityButtonHeight,
+                            iconSize = utilityIconSize,
+                        )
+                        PlayerOutlineToolButton(
+                            icon = Icons.Filled.NightlightRound,
+                            contentDescription = stringResource(R.string.cd_player_sleep),
+                            buttonWidth = utilityButtonWidth,
+                            buttonHeight = utilityButtonHeight,
+                            iconSize = utilityIconSize,
+                        )
+                        PlayerOutlineToolButton(
+                            icon = Icons.Filled.OpenInFull,
+                            contentDescription = stringResource(R.string.cd_player_expand),
+                            buttonWidth = utilityButtonWidth,
+                            buttonHeight = utilityButtonHeight,
+                            iconSize = utilityIconSize,
+                        )
+                        PlayerOutlineToolButton(
+                            icon = Icons.Filled.FormatAlignLeft,
+                            contentDescription = stringResource(R.string.cd_player_lyrics),
+                            buttonWidth = utilityButtonWidth,
+                            buttonHeight = utilityButtonHeight,
+                            iconSize = utilityIconSize,
+                        )
+                        PlayerOutlineToolButton(
+                            icon = Icons.Filled.Repeat,
+                            contentDescription = stringResource(R.string.cd_player_repeat),
+                            buttonWidth = utilityButtonWidth,
+                            buttonHeight = utilityButtonHeight,
+                            iconSize = utilityIconSize,
                         )
                     }
+
+                    Spacer(modifier = Modifier.width(if (isCompact) 10.dp else 14.dp))
+
+                    Surface(
+                        modifier = Modifier
+                            .size(overflowButtonSize)
+                            .clip(CircleShape)
+                            .clickable { },
+                        shape = CircleShape,
+                        color = PlayerWhiteButton
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = stringResource(R.string.cd_player_more),
+                                tint = PlayerDarkIcon,
+                                modifier = Modifier.size(overflowIconSize)
+                            )
+                        }
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(if (isCompact) 10.dp else 14.dp))
             }
         }
     }
@@ -364,11 +463,13 @@ fun PlayerScreen(song: Song, onClose: () -> Unit = {}) {
 @Composable
 private fun PlayerSquareButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    contentDescription: String
+    contentDescription: String,
+    size: Dp = 72.dp,
+    iconSize: Dp = 34.dp,
 ) {
     Surface(
         modifier = Modifier
-            .size(72.dp)
+            .size(size)
             .clip(RoundedCornerShape(10.dp))
             .clickable { },
         color = PlayerWhiteButton,
@@ -379,7 +480,7 @@ private fun PlayerSquareButton(
                 imageVector = icon,
                 contentDescription = contentDescription,
                 tint = PlayerDarkIcon,
-                modifier = Modifier.size(34.dp)
+                modifier = Modifier.size(iconSize)
             )
         }
     }
@@ -389,7 +490,8 @@ private fun PlayerSquareButton(
 private fun PlayerCircleTransportButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     contentDescription: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    iconSize: Dp = 38.dp,
 ) {
     Surface(
         modifier = modifier
@@ -403,7 +505,7 @@ private fun PlayerCircleTransportButton(
                 imageVector = icon,
                 contentDescription = contentDescription,
                 tint = PlayerPrimaryText,
-                modifier = Modifier.size(38.dp)
+                modifier = Modifier.size(iconSize)
             )
         }
     }
@@ -412,11 +514,14 @@ private fun PlayerCircleTransportButton(
 @Composable
 private fun PlayerOutlineToolButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    contentDescription: String
+    contentDescription: String,
+    buttonWidth: Dp = 40.dp,
+    buttonHeight: Dp = 56.dp,
+    iconSize: Dp = 24.dp,
 ) {
     Surface(
         modifier = Modifier
-            .size(width = 40.dp, height = 56.dp)
+            .size(width = buttonWidth, height = buttonHeight)
             .clip(RoundedCornerShape(12.dp))
             .clickable { },
         color = Color.Transparent,
@@ -432,7 +537,7 @@ private fun PlayerOutlineToolButton(
                 imageVector = icon,
                 contentDescription = contentDescription,
                 tint = PlayerMutedText,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(iconSize)
             )
         }
     }

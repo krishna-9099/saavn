@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.7.3] - 2026-04-19
+
+### Fixed
+- Updated full player vertical layout to prevent bottom control clipping on compact-height devices.
+- Added compact-height responsive sizing for artwork, transport controls, and utility actions so bottom controls remain visible.
+- Added navigation-bar inset handling and scroll fallback in the full player to keep controls reachable across device sizes.
+
 ## [0.7.2] - 2026-04-19
 
 ### Changed
