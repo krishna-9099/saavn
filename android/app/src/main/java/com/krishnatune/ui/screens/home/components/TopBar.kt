@@ -27,16 +27,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import coil.compose.rememberAsyncImagePainter
 import com.krishnatune.R
+import com.krishnatune.ui.theme.AdaptiveTypeScale
+import com.krishnatune.ui.theme.bbh_bartle
 import com.krishnatune.ui.theme.LibraryCardSurface
 import com.krishnatune.ui.theme.LibraryScreenBackground
 import com.krishnatune.ui.theme.ProfilePopupSwitchTrack
+import com.krishnatune.ui.theme.rememberAdaptiveTypeScale
 import com.krishnatune.ui.theme.WhiteText
+import kotlin.math.min
 
 @Composable
 fun TopBar(
@@ -44,6 +50,13 @@ fun TopBar(
     onSettingsClick: () -> Unit = {}
 ) {
     var isProfilePopupVisible by rememberSaveable { mutableStateOf(false) }
+    val typeScale = rememberAdaptiveTypeScale()
+    val widthDp = LocalConfiguration.current.screenWidthDp
+    val homeTitleSize = if (widthDp >= 600) {
+        min(34f * typeScale.heading, 22f)
+    } else {
+        34f * typeScale.heading
+    }
 
     Row(
         modifier = Modifier
@@ -55,8 +68,10 @@ fun TopBar(
         Text(
             text = title,
             style = MaterialTheme.typography.headlineMedium.copy(
+                fontFamily = bbh_bartle,
                 fontStyle = FontStyle.Italic,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                fontSize = homeTitleSize.sp
             )
         )
 
@@ -90,7 +105,8 @@ fun TopBar(
             onSettingsClick = {
                 isProfilePopupVisible = false
                 onSettingsClick()
-            }
+            },
+            typeScale = typeScale,
         )
     }
 }
@@ -98,7 +114,8 @@ fun TopBar(
 @Composable
 private fun ProfilePopup(
     onDismiss: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    typeScale: AdaptiveTypeScale,
 ) {
     var moreContentEnabled by rememberSaveable { mutableStateOf(true) }
     var autoSyncEnabled by rememberSaveable { mutableStateOf(true) }
@@ -124,8 +141,10 @@ private fun ProfilePopup(
                     Text(
                         text = stringResource(R.string.profile_popup_title),
                         style = MaterialTheme.typography.headlineSmall.copy(
+                            fontFamily = bbh_bartle,
                             fontStyle = FontStyle.Italic,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = (27f * typeScale.heading).sp
                         )
                     )
                     IconButton(onClick = onDismiss) {
@@ -159,7 +178,11 @@ private fun ProfilePopup(
                         Text(
                             text = stringResource(R.string.profile_popup_user_name),
                             modifier = Modifier.weight(1f),
-                            style = MaterialTheme.typography.titleLarge.copy(fontStyle = FontStyle.Italic)
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontFamily = bbh_bartle,
+                                fontStyle = FontStyle.Italic,
+                                fontSize = (24f * typeScale.title).sp
+                            )
                         )
                         OutlinedButton(
                             onClick = { },
@@ -168,7 +191,11 @@ private fun ProfilePopup(
                         ) {
                             Text(
                                 text = stringResource(R.string.profile_popup_logout),
-                                style = MaterialTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic)
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontFamily = bbh_bartle,
+                                    fontStyle = FontStyle.Italic,
+                                    fontSize = (15f * typeScale.body).sp,
+                                )
                             )
                         }
                     }
@@ -176,36 +203,42 @@ private fun ProfilePopup(
 
                 ProfileInfoCard(
                     icon = Icons.Outlined.VpnKey,
-                    title = stringResource(R.string.profile_popup_tap_show_token)
+                    title = stringResource(R.string.profile_popup_tap_show_token),
+                    typeScale = typeScale,
                 )
                 ProfileToggleCard(
                     icon = Icons.Outlined.AddCircle,
                     title = stringResource(R.string.profile_popup_more_content),
                     checked = moreContentEnabled,
-                    onCheckedChange = { moreContentEnabled = it }
+                    onCheckedChange = { moreContentEnabled = it },
+                    typeScale = typeScale,
                 )
                 ProfileToggleCard(
                     icon = Icons.Outlined.Sync,
                     title = stringResource(R.string.profile_popup_auto_sync),
                     checked = autoSyncEnabled,
-                    onCheckedChange = { autoSyncEnabled = it }
+                    onCheckedChange = { autoSyncEnabled = it },
+                    typeScale = typeScale,
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
 
                 ProfileMenuItem(
                     icon = Icons.Outlined.Extension,
-                    title = stringResource(R.string.profile_popup_integrations)
+                    title = stringResource(R.string.profile_popup_integrations),
+                    typeScale = typeScale,
                 )
                 ProfileMenuItem(
                     icon = Icons.Outlined.Settings,
                     title = stringResource(R.string.profile_popup_settings),
-                    onClick = onSettingsClick
+                    onClick = onSettingsClick,
+                    typeScale = typeScale,
                 )
                 ProfileMenuItem(
                     icon = Icons.Outlined.Update,
                     title = stringResource(R.string.profile_popup_new_version),
-                    subtitle = stringResource(R.string.profile_popup_version)
+                    subtitle = stringResource(R.string.profile_popup_version),
+                    typeScale = typeScale,
                 )
             }
         }
@@ -215,7 +248,8 @@ private fun ProfilePopup(
 @Composable
 private fun ProfileInfoCard(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    title: String
+    title: String,
+    typeScale: AdaptiveTypeScale,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -232,7 +266,11 @@ private fun ProfileInfoCard(
             Spacer(modifier = Modifier.width(14.dp))
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleLarge.copy(fontStyle = FontStyle.Italic)
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontFamily = bbh_bartle,
+                    fontStyle = FontStyle.Italic,
+                    fontSize = (19f * typeScale.title).sp,
+                )
             )
         }
     }
@@ -243,7 +281,8 @@ private fun ProfileToggleCard(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    typeScale: AdaptiveTypeScale,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -265,7 +304,11 @@ private fun ProfileToggleCard(
                 Spacer(modifier = Modifier.width(14.dp))
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleLarge.copy(fontStyle = FontStyle.Italic)
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontFamily = bbh_bartle,
+                        fontStyle = FontStyle.Italic,
+                        fontSize = (19f * typeScale.title).sp,
+                    )
                 )
             }
 
@@ -298,7 +341,8 @@ private fun ProfileMenuItem(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
     subtitle: String? = null,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
+    typeScale: AdaptiveTypeScale,
 ) {
     Row(
         modifier = Modifier
@@ -319,12 +363,20 @@ private fun ProfileMenuItem(
         Column {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleLarge.copy(fontStyle = FontStyle.Italic)
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontFamily = bbh_bartle,
+                    fontStyle = FontStyle.Italic,
+                    fontSize = (19f * typeScale.title).sp,
+                )
             )
             if (subtitle != null) {
                 Text(
                     text = subtitle,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic),
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontFamily = bbh_bartle,
+                        fontStyle = FontStyle.Italic,
+                        fontSize = (14f * typeScale.body).sp,
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

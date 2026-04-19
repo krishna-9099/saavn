@@ -4,6 +4,110 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.6.8] - 2026-04-19
+
+### Fixed
+- Corrected oversized typography on tablet-class devices by revising adaptive type multipliers to avoid upscaling on large widths.
+- Added font-scale compensation in responsive typography to keep text stable when system font size is increased.
+- Added targeted Samsung `SM-X115` device compensation profile to fix the reported on-device heading/title oversizing.
+- Added explicit tablet caps for Home and section header stylized text so large screens keep Metro proportions.
+
+## [0.6.7] - 2026-04-19
+
+### Fixed
+- Converted recent MetroList font-size overrides from fixed values to adaptive screen-width-based scaling.
+- Added shared responsive typography scale utility and applied it to:
+	- full player title/artist/header/timing/play label,
+	- mini player title/artist,
+	- top bar title and profile popup typography,
+	- home section headings.
+- Improved readability consistency across compact phones, normal devices, and tablets.
+
+## [0.6.6] - 2026-04-19
+
+### Fixed
+- Rebalanced MetroList-font sizes across key app surfaces where text hierarchy still looked off.
+- Increased readability and visual weight for:
+	- player header/title/artist/time labels and play button text,
+	- mini player title/artist,
+	- top app bar title and profile popup headline/user name,
+	- home section row headings.
+
+## [0.6.5] - 2026-04-19
+
+### Changed
+- Applied MetroList `bbh_bartle` font usage to key KrishnaTune UI surfaces for closer visual parity:
+	- full player labels and timing text,
+	- mini player title/artist,
+	- app top bar and profile popup headline,
+	- home section row titles.
+- Kept the MetroList-derived typography scale as the base theme and layered explicit decorative font usage on selected heading/hero text components.
+
+## [0.6.4] - 2026-04-19
+
+### Added
+- Ported MetroList theme font assets (`bbh_bartle_regular.ttf` and `bbh_bartle.xml`) into app resources.
+- Added MetroList-style theme token files for typography, spacing/dimensions, and custom font family aliases.
+
+### Changed
+- Updated `KrishnaTuneTheme` to use MetroList-style theming behavior: dynamic colors on Android 12+, Metro seed fallback palette, and optional pure-black dark mode.
+- Replaced app typography scale with MetroList Material 3 typography tokens and updated shape radii to MetroList-style corner values.
+- Switched player/miniplayer layout spacing to use centralized MetroList-derived theme spacing tokens.
+
+## [0.6.3] - 2026-04-19
+
+### Added
+- Ported a MetroList-inspired mini player pill design with circular artwork progress and compact quick actions.
+- Ported a MetroList-inspired full player layout with top header controls, large rounded artwork, scrubbable timeline slider, and transport controls.
+- Added mini-player color tokens and accessibility strings for play, pause, close, and add-to-playlist actions.
+
+### Changed
+- Replaced previous KrishnaTune player and mini-player Compose UIs with MetroList-styled equivalents adapted to the existing `Song` data flow and app navigation.
+- Kept swipe-down dismiss behavior for the full player while avoiding hard dependencies on MetroList-specific service/state providers.
+
+## [0.6.2] - 2026-04-19
+
+### Changed
+- Removed unused legacy full-player file from `ui/screens/PlayerScreen.kt` after migrating active player implementation to `ui/player/PlayerScreen.kt`.
+- Deleted obsolete empty directories left from old layout (`data/`, `domain/`, old `ui/components`, and empty screen component subfolders).
+
+### Fixed
+- Cleaned stale package paths to keep the MetroList-style structure consistent and avoid future import confusion.
+
+## [0.6.1] - 2026-04-19
+
+### Changed
+- Reorganized core source files into MetroList-style package paths under `com.krishnatune`.
+- Moved API layer to `api/` (`SaavnApi`), shared models to `models/` (`Song`, `HomeDataResponse`), and home state handling to `viewmodels/` (`HomeViewModel`, `HomeUiState`).
+- Moved reusable UI pieces to `ui/component/` (`MiniPlayer`, `SongCardV2`) and full-player screen implementation to `ui/player/` (`PlayerScreen`).
+- Updated imports and package references across navigation and screen files to match the new structure.
+
+### Fixed
+- Resolved Home screen compile errors after ViewModel relocation by importing `HomeViewModel` and `HomeUiState` from `com.krishnatune.viewmodels`.
+
+## [0.5.0] - 2026-04-19
+
+### Added
+- Scaffolded a MetroList-inspired package folder structure under `android/app/src/main/java/com/krishnatune` by creating missing directories and `.gitkeep` placeholders.
+- Added foundational folders for architecture expansion, including: `api`, `constants`, `db`, `di`, `eq`, `playback`, `viewmodels`, `widget`, `quicksettings`, `recognition`, `listentogether`, and additional UI feature folders.
+
+### Changed
+- Aligned project package layout more closely with the embedded `Metrolist` source structure to support future feature parity and modular growth.
+
+## [0.4.1] - 2026-04-19
+
+### Fixed
+- Corrected Player screen vertical drag gesture callback from `onDrag` to `onVerticalDrag` to resolve Kotlin compile errors during `installDebug`.
+
+## [0.6.0] - 2026-04-19
+
+### Added
+- Smooth swipe down animation to close the full screen player (`PlayerScreen`).
+
+### Changed
+- `AppNavigation` passes an `onClose` callback to `PlayerScreen` to handle the back navigation triggered by the swipe down gesture.
+
+
 ## [0.5.0] - 2026-04-19
 
 ### Added

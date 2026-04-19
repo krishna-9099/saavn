@@ -21,10 +21,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.krishnatune.domain.model.Song
-import com.krishnatune.ui.components.MiniPlayer
+import com.krishnatune.models.Song
+import com.krishnatune.ui.component.MiniPlayer
 import com.krishnatune.ui.screens.home.HomeScreen
-import com.krishnatune.ui.screens.player.PlayerScreen
+import com.krishnatune.ui.player.PlayerScreen
 import com.krishnatune.ui.screens.search.SearchScreen
 import com.krishnatune.ui.screens.library.LibraryScreen
 import com.krishnatune.ui.screens.settings.SettingsScreen
@@ -102,7 +102,10 @@ fun AppNavigation() {
                     SettingsScreen()
                 }
                 composable("player") {
-                    PlayerScreen(song = currentSong)
+                    PlayerScreen(
+                        song = currentSong,
+                        onClose = { navController.popBackStack() }
+                    )
                 }
                 composable("playlist/{id}") { backStackEntry ->
                     PlaylistScreen()

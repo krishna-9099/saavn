@@ -41,10 +41,13 @@
 
     <string name="player_now_playing">Now playing</string>
     <string name="player_playlist_name">Bollywood Party</string>
+    <string name="player_play">Play</string>
     <string name="player_pause">Pause</string>
 
+    <string name="cd_player_close">Close player</string>
     <string name="cd_player_share">Share song</string>
     <string name="cd_player_like">Like song</string>
+    <string name="cd_player_play">Play playback</string>
     <string name="cd_player_previous">Previous song</string>
     <string name="cd_player_pause">Pause playback</string>
     <string name="cd_player_next">Next song</string>
@@ -78,4 +81,8 @@
     <string name="cd_player_menu_details">Show song details</string>
     <string name="cd_player_menu_equalizer">Open equalizer</string>
     <string name="cd_player_menu_advanced">Open advanced audio controls</string>
+
+    <string name="cd_mini_player_play">Play song</string>
+    <string name="cd_mini_player_pause">Pause song</string>
+    <string name="cd_mini_player_add_to_playlist">Add song to playlist</string>
 </resources>

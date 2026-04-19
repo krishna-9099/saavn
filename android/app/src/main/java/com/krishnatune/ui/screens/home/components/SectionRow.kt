@@ -7,10 +7,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.krishnatune.domain.model.HomeSectionItem
+import androidx.compose.ui.unit.sp
+import com.krishnatune.models.HomeSectionItem
+import com.krishnatune.ui.theme.bbh_bartle
+import com.krishnatune.ui.theme.rememberAdaptiveTypeScale
 import com.krishnatune.ui.utils.NetworkImage
+import kotlin.math.min
 
 @Composable
 fun SectionRow(
@@ -18,10 +24,22 @@ fun SectionRow(
     items: List<HomeSectionItem>,
     onItemClick: (HomeSectionItem) -> Unit
 ) {
+    val typeScale = rememberAdaptiveTypeScale()
+    val widthDp = LocalConfiguration.current.screenWidthDp
+    val sectionTitleSize = if (widthDp >= 600) {
+        min(22f * typeScale.title, 16f)
+    } else {
+        22f * typeScale.title
+    }
+
     Column {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontFamily = bbh_bartle,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = sectionTitleSize.sp
+            ),
             modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
         )
 

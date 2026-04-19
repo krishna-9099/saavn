@@ -1,4 +1,4 @@
-package com.krishnatune.domain.model
+package com.krishnatune.models
 
 data class HomeDataResponse(
     val new_trending: List<HomeSectionItem>?,

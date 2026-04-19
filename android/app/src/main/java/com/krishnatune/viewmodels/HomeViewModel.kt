@@ -1,16 +1,16 @@
-package com.krishnatune.ui.screens.home
+package com.krishnatune.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.krishnatune.data.remote.SaavnApi
-import com.krishnatune.domain.model.HomeDataResponse
+import com.krishnatune.api.SaavnApi
+import com.krishnatune.models.HomeDataResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 sealed class HomeUiState {
     object Loading : HomeUiState()
-    data class Success(val data: HomeDataResponse, val sortedModules: List<Pair<String, com.krishnatune.domain.model.ModuleConfig>>) : HomeUiState()
+    data class Success(val data: HomeDataResponse, val sortedModules: List<Pair<String, com.krishnatune.models.ModuleConfig>>) : HomeUiState()
     data class Error(val message: String) : HomeUiState()
 }
 

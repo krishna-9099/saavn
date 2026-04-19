@@ -24,9 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.krishnatune.R
-import com.krishnatune.domain.model.HomeSectionItem
+import com.krishnatune.models.HomeSectionItem
 import com.krishnatune.ui.screens.home.components.SectionRow
 import com.krishnatune.ui.screens.home.components.TopBar
+import com.krishnatune.viewmodels.HomeUiState
+import com.krishnatune.viewmodels.HomeViewModel
 
 @Composable
 fun HomeScreen(
@@ -188,7 +190,7 @@ fun VerticalListSection(
     }
 }
 
-private fun getItemsForSource(source: String?, data: com.krishnatune.domain.model.HomeDataResponse): List<HomeSectionItem>? {
+private fun getItemsForSource(source: String?, data: com.krishnatune.models.HomeDataResponse): List<HomeSectionItem>? {
     return when (source) {
         "new_trending" -> data.new_trending
         "top_playlists" -> data.top_playlists

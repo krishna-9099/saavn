@@ -1,4 +1,4 @@
-package com.krishnatune.ui.components
+package com.krishnatune.ui.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -6,7 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.krishnatune.domain.model.Song
+import com.krishnatune.models.Song
 import com.krishnatune.ui.utils.NetworkImage
 
 @Composable

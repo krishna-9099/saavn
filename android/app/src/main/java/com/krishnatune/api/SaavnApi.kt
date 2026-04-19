@@ -1,6 +1,6 @@
-package com.krishnatune.data.remote
+package com.krishnatune.api
 
-import com.krishnatune.domain.model.HomeDataResponse
+import com.krishnatune.models.HomeDataResponse
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
